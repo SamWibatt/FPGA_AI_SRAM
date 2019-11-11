@@ -9,7 +9,7 @@ Ultimately, I want to implement modern methods such as RNNs, but since I'm still
 
 # Notes
 
-I will be keeping my usual stream of consciousness notes in the repo wiki, qv.
+I will be keeping my usual stream of consciousness [notes in the repo wiki, qv](https://github.com/SamWibatt/FPGA_AI_SRAM/wiki).
 
             
     
