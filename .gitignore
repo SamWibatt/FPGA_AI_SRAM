@@ -1,3 +1,14 @@
+# from osresearch's serial project
+.*.swp
+*.bin
+*.blif
+*.asc
+*.timing
+pll_*.v
+*.json
+.*.d
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
