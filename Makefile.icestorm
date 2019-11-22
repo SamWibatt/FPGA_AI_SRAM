@@ -90,9 +90,9 @@ pll_%.v:
 # I don't see anything in there about an extension you're supposed to use, so I will use .icmd.
 # if there's a dumpvars in the testbench source, I don't think I need to do the vvp part? or do I?
 # THE PROBLEM WITH THIS IS THAT THE DEPENDENCY DIRECTLY ON .V FILES IS BROKEN! so if you change your .v
-# you have to run make clean and then make test. :P well, getting there 
+# you have to run make clean and then make test. :P well, getting there
 %.vvp: %.icmd
-	iverilog -o $@ -f $<
+	iverilog -D TEST -o $@ -f $<
 
 %.vcd: %.vvp
 	vvp $<

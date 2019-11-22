@@ -5,14 +5,15 @@
 
 // FOR STARTERS JUST USING CLIFFORD WOLF'S BLINKY
 module sram_1Mx8(i_clk, o_led);
+    parameter CBITS = 26;
     input wire i_clk;
 
     //here will go all the address and data lines and stuff
 
     output wire o_led;
 
-    reg	[25:0]	counter = 0;
+    reg	[CBITS-1:0]	counter = 0;
     always @(posedge i_clk)
     counter <= counter + 1'b1;
-    assign o_led = counter[25];
+    assign o_led = counter[CBITS-1];
 endmodule

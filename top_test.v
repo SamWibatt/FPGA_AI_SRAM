@@ -2,6 +2,8 @@
 
 `default_nettype none
 
+
+
 `include "sram.v"
 
 // FOR STARTERS JUST USING CLIFFORD WOLF'S BLINKY
@@ -16,7 +18,14 @@ module top_test();
 
     //then the sram module proper, currently a blinkois
     //let us have it blink on the blue upduino LED.
-    sram_1Mx8 ram(.i_clk(clk),.o_led(led_b_outwire));
+    // test using smaller counter so we don't have to run a jillion cycles in gtkwave
+    // ....well, this module should always be compiled with TEST defined but... wev 
+    `ifdef TEST
+    parameter cbits = 4;
+    `else
+    parameter cbits = 26;
+    `endif
+    sram_1Mx8 #(.CBITS(cbits)) ram(.i_clk(clk),.o_led(led_b_outwire));
 
     always @(posedge clk) begin
         //this should drive the blinkingness
