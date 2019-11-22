@@ -11,7 +11,7 @@ module sram_1Mx8(i_clk, o_led);
 
     output wire o_led;
 
-    reg	[25:0]	counter;
+    reg	[25:0]	counter = 0;
     always @(posedge i_clk)
     counter <= counter + 1'b1;
     assign o_led = counter[25];

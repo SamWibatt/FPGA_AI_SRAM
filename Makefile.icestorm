@@ -64,17 +64,43 @@ pll_%.v:
 		-f $@
 
 
-define make-test =
-$1: $1.vvp
-	vvp $$<
-endef
+# sean comments this out until he understands makefiles which will probably be never
+# define make-test =
+# $1: $1.vvp
+# 	vvp $$<
+# endef
+#
+# test: $(TEST-y)
+# $(foreach t,$(TEST-y),$(eval $(call make-test,$t)))
+# %.vvp:
+# 	iverilog -o $@ -s $(basename $@) $^
 
-test: $(TEST-y)
-$(foreach t,$(TEST-y),$(eval $(call make-test,$t)))
-%.vvp:
-	iverilog -o $@ -s $(basename $@) $^
+# so ok, I give a test target in the Makefile that looks like
+# test: top_test.vcd or something
+
+# here is how I've done this in my shell scripts
+# iverilog -D SIM_STEP -o hd44780_bytesend_tb.vvp hd44780_bytesender.v hd44780_nybsen.v hd44780_bytesend_tb.v hd44780_syscon.v 1>> sim_tb_out.txt 2>> sim_tb_err.txt
+# vvp hd44780_bytesend_tb.vvp  1>> sim_tb_out.txt 2>> sim_tb_err.txt
+##gtkwave -o does optimization of vcd to FST format, good for the big sims
+## or just do it here
+#vcd2fst hd44780_bytesend_tb.vcd hd44780_bytesend_tb.fst
+#rm -f hd44780_bytesend_tb.vcd
+
+# so let's use an iverilog command file, a la https://iverilog.fandom.com/wiki/Command_File_Format
+# I don't see anything in there about an extension you're supposed to use, so I will use .icmd.
+# if there's a dumpvars in the testbench source, I don't think I need to do the vvp part? or do I?
+# THE PROBLEM WITH THIS IS THAT THE DEPENDENCY DIRECTLY ON .V FILES IS BROKEN! so if you change your .v
+# you have to run make clean and then make test. :P well, getting there 
+%.vvp: %.icmd
+	iverilog -o $@ -f $<
+
+%.vcd: %.vvp
+	vvp $<
+
+%.fst: %.vcd
+	vcd2fst $< $@
 
 clean:
-	$(RM) *.blif *.asc *.bin *.json .*.d
+	$(RM) *.blif *.asc *.bin *.json .*.d *.vcd *.vvp *.fst
 
 -include .*.d

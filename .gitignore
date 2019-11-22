@@ -7,6 +7,9 @@
 pll_*.v
 *.json
 .*.d
+*.vvp
+*.vcd
+*.fst
 
 
 # Byte-compiled / optimized / DLL files
