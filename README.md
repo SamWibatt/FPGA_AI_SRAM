@@ -1,6 +1,12 @@
 # FPGA_AI_SRAM
 Preliminary part of AI acceleration with FPGAs, interfacing external memory for greater capacity.
 
+Memory chips I will use for the experiments are the [Cypress Semiconductor Corp. CY62157EV30LL-45ZXIT 1Mx8 SRAM (pdf)](https://www.cypress.com/file/43021/download) and the [Cypress Semiconductor Corp S29AL008J55TFNR10 1Mx8 Flash (pdf)](https://www.cypress.com/file/216396/download). 
+
+Chose these for cost and simplicity. They have the same footprint. The Flash has the advantages of costing $0.60 in 10-quantity from Digi-Key, so being good for TSOP soldering practice, as well as being able to retain data while unpowered. The SRAM is pricier at $2.93 in single quantity, so not bad.
+
+Their interface is easy to understand and they're kind of OK for speed. Speed in actual wall time is not the point of this exercise so much as speed in terms of clock cycles; I'm looking more for savings of complexity which will translated to savings in time once it can run on "real" hardware.
+
 # Objective
 
 The initial goal is to try accelerating some data structures such as red/black trees and running some old AI techniques like A* to get a feel for how well programmable logic can tighten them up.
