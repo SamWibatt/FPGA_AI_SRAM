@@ -91,16 +91,20 @@ pll_%.v:
 # if there's a dumpvars in the testbench source, I don't think I need to do the vvp part? or do I?
 # THE PROBLEM WITH THIS IS THAT THE DEPENDENCY DIRECTLY ON .V FILES IS BROKEN! so if you change your .v
 # you have to run make clean and then make test. :P well, getting there
+# the redirects into output files is also order dependent, i.e. depends on the icmd -> vvp rule running first.
+# FIX THAT! so that if we already had the vvp and just needed to do the subsequent steps... or maybe just consolidate it all into
+# a single %fst: %.vcd rule?
+# makefile automatic vars documented here https://www.gnu.org/software/make/manual/html_node/Automatic-Variables.html
 %.vvp: %.icmd
-	iverilog -D TEST -o $@ -f $<
+	iverilog -D TEST -o $@ -f $< 1> sim_$*_out.txt 2> sim_$*_err.txt
 
 %.vcd: %.vvp
-	vvp $<
+	vvp $< 1>> sim_$*_out.txt 2>> sim_$*_err.txt
 
 %.fst: %.vcd
-	vcd2fst $< $@
+	vcd2fst $< $@ 1>> sim_$*_out.txt 2>> sim_$*_err.txt
 
 clean:
-	$(RM) *.blif *.asc *.bin *.json .*.d *.vcd *.vvp *.fst
+	$(RM) *.blif *.asc *.bin *.json .*.d *.vcd *.vvp *.fst *_out.txt *_err.txt
 
 -include .*.d

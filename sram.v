@@ -4,13 +4,15 @@
 `default_nettype none
 
 // FOR STARTERS JUST USING CLIFFORD WOLF'S BLINKY
-module sram_1Mx8(i_clk, o_led);
+module sram_1Mx8(
+    input wire i_clk,
+    output wire o_led       //temp debug
+    //here will go all the address and data lines and stuff
+    );
+
     parameter CBITS = 26;
-    input wire i_clk;
 
     //here will go all the address and data lines and stuff
-
-    output wire o_led;
 
     reg	[CBITS-1:0]	counter = 0;
     always @(posedge i_clk)

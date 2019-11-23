@@ -10,6 +10,8 @@ pll_*.v
 *.vvp
 *.vcd
 *.fst
+*_out.txt
+*_err.txt
 
 
 # Byte-compiled / optimized / DLL files
