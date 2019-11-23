@@ -1,7 +1,7 @@
 //top.v - "main" or "controller" for sram project
 `default_nettype none
 
-`include "sram.v"
+//`include "sram.v"
 
 module top(
     output wire led_g,              //alive-blinky, use rgb green ... from controller

@@ -4,7 +4,7 @@
 
 
 
-`include "sram.v"
+//`include "sram.v"
 
 // FOR STARTERS JUST USING CLIFFORD WOLF'S BLINKY
 module top_test();
@@ -19,7 +19,7 @@ module top_test();
     //then the sram module proper, currently a blinkois
     //let us have it blink on the blue upduino LED.
     // test using smaller counter so we don't have to run a jillion cycles in gtkwave
-    // ....well, this module should always be compiled with TEST defined but... wev 
+    // ....well, this module should always be compiled with TEST defined but... wev
     `ifdef TEST
     parameter cbits = 4;
     `else
