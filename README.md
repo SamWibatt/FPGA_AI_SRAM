@@ -19,6 +19,8 @@ Copied over some initial stuff like osresearch's makefile for their serial proje
 
 # Notes
 
+**Release / tag v0.1 should be a good skeleton for future icestorm projects**
+
 I will be keeping my usual stream of consciousness [notes in the repo wiki, qv](https://github.com/SamWibatt/FPGA_AI_SRAM/wiki).
 
 Makefile, Makefile.icestorm, and upduino_v2.pcf are copied and modified from osresearch's code at https://github.com/osresearch/up5k licensed under GPL3
