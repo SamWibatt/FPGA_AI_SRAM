@@ -33,32 +33,18 @@ PNR ?= $(ICEPATH)nextpnr-ice40
 	$(ICEPATH)iceprog $<
 	echo $(USB_DEV) | tee /sys/bus/usb/drivers/ftdi_sio/bind
 
-%.bin: %.asc
-	$(ICEPATH)icepack $< $@
-
-# so here's what my build script looked like.
-#yosys -p "read_verilog hd44780_timer.v; read_verilog hd44780_nybsen.v; read_verilog hd44780_syscon.v; \
-#	read_verilog hd44780_ram.v; read_verilog hd44780_controller.v; read_verilog hd44780_hello.v; \
-#	synth_ice40 -top hd44780_hello; write_json hd44780_hello.json"
-# #used to just be yosys "$proj".ys but it's better to be able to list them out like this I reckon
 # OH WOW THIS IS CLUMSY BUT I THINK IT WORKS. what it does is given a variable alldeps that looks like
 # top.v submod1.v submod2.v
 # prepends "read_verilog " then trims ws from beginning and end of alldeps and replaces any ".v" followed by a space with ".v; read_verilog "
 # than appends ; which transforms that one into
 # read_verilog top.v; read_verilog submod1.v; read_verilog submod2.v;
 # also works if there is only one .v file in the dependency list!
+# THIS HAS ORDER DEPENDENCY THAT ASSUMES JSON RULE WILL RUN FIRST and create the out and err text files. Probably not a horrible assumption
 %.json: $(alldeps)
-	$(ICEPATH)yosys -p "read_verilog $(subst .v ,.v; read_verilog ,$(strip $(alldeps))); synth_ice40 -top top; write_json $@"
+	$(ICEPATH)yosys -p "read_verilog $(subst .v ,.v; read_verilog ,$(strip $(alldeps))); synth_ice40 -top top; write_json $@" 1> build_$*_out.txt 2> build_$*_err.txt
 
-#$(ICEPATH)yosys -p "read_verilog $(subst(' ','; read_verilog ',$(alldeps)))"
-
-# Here is osresearch's original rule that required top to include submodules which I'd rather avoid
-#%.json: %.v
-#	$(ICEPATH)yosys \
-#		-q \
-#		-p 'read_verilog $<' \
-#		-p 'synth_ice40 -top top -json $@' \
-#		-E .$(basename $@).d \
+%.bin: %.asc
+	$(ICEPATH)icepack $< $@ 1>> build_$*_out.txt 2>> build_$*_err.txt
 
 %.asc: $(PIN_SRC) %.json
 	$(PNR) \
@@ -67,12 +53,13 @@ PNR ?= $(ICEPATH)nextpnr-ice40
 		--asc $@ \
 		--pcf $(PIN_SRC) \
 		--json $(basename $@).json \
+		 1>> build_$*_out.txt 2>> build_$*_err.txt
 
 %.gui: %.json
-	$(PNR) --gui --$(DEVICE) --pcf $(PIN_SRC) --json $<
+	$(PNR) --gui --$(DEVICE) --pcf $(PIN_SRC) --json $< 1>> build_$*_out.txt 2>> build_$*_err.txt
 
 %.bin: %.asc
-	$(ICEPATH)icepack $^ $@
+	$(ICEPATH)icepack $^ $@ 1>> build_$*_out.txt 2>> build_$*_err.txt
 
 # Generate a desired MHz pll
 pll_%.v:
@@ -86,6 +73,7 @@ pll_%.v:
 
 
 # give testdeps in the main Makefile as a space-separated list of .v files, just like in good old Makefile fashion
+# THIS HAS ORDER DEPENDENCY THAT ASSUMES VVP RULE WILL RUN FIRST and create the out and err text files. Probably not a horrible assumption
 %.vvp: $(testdeps)
 	iverilog -D TEST -o $@ $(testdeps) 1> sim_$*_out.txt 2> sim_$*_err.txt
 
