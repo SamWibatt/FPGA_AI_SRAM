@@ -3,11 +3,11 @@
 
 `default_nettype none
 
-// FOR STARTERS JUST USING CLIFFORD WOLF'S BLINKY
+// FOR STARTERS JUST USING DAN GISSELQUIST'S BLINKY
 module sram_1Mx8(
     input wire i_clk,
     output wire o_led       //temp debug
-    //here will go all the address and data lines and stuff - make the addr width variable 
+    //here will go all the address and data lines and stuff - make the addr width variable
     );
 
     parameter CBITS = 26;
