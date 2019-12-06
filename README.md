@@ -19,7 +19,7 @@ Copied over some initial stuff like osresearch's makefile for their serial proje
 
 # Notes
 
-**Release / tag v0.1 should be a good skeleton for future icestorm projects**
+**Release / tag v0.1 should be a good skeleton for future icestorm projects** But [the repository VerilogSkeleton](https://github.com/SamWibatt/VerilogSkeleton) should also be that and I will maintain it as such.
 
 I will be keeping my usual stream of consciousness [notes in the repo wiki, qv](https://github.com/SamWibatt/FPGA_AI_SRAM/wiki).
 
