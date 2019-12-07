@@ -15,6 +15,7 @@ pll_*.v
 
 # Kicad
 *.bck
+*-bak
 
 
 # Byte-compiled / optimized / DLL files
