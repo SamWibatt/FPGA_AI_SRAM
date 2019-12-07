@@ -1,0 +1,7 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP CY62157
+D SRAM 8Mbit 1Mx8 or 512Kx16
+$ENDCMP
+#
+#End Doc Library

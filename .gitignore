@@ -1,4 +1,4 @@
-# from osresearch's serial project
+# from osresearch's serial project plus some of my own
 .*.swp
 *.bin
 *.blif
@@ -12,6 +12,9 @@ pll_*.v
 *.fst
 *_out.txt
 *_err.txt
+
+# Kicad
+*.bck
 
 
 # Byte-compiled / optimized / DLL files
