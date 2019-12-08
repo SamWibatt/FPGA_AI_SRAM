@@ -18,7 +18,7 @@ L Connector:Conn_01x22_Male J1
 U 1 1 5DEC4858
 P 3800 2450
 F 0 "J1" H 3908 3631 50  0000 C CNN
-F 1 "Conn_01x22_Male" H 3908 3540 50  0000 C CNN
+F 1 "Conn_01x22_Male" V 3700 3150 50  0000 C CNN
 F 2 "Connector_PinHeader_2.54mm:PinHeader_1x22_P2.54mm_Vertical" H 3800 2450 50  0001 C CNN
 F 3 "~" H 3800 2450 50  0001 C CNN
 	1    3800 2450
@@ -248,4 +248,78 @@ Wire Wire Line
 	4650 4050 4350 4050
 Wire Wire Line
 	4650 4150 4600 4150
+Text Label 5950 1650 0    50   ~ 0
+IO0
+Text Label 5950 1750 0    50   ~ 0
+I01
+Text Label 5950 1850 0    50   ~ 0
+IO2
+Text Label 5950 1950 0    50   ~ 0
+IO3
+Text Label 5950 2050 0    50   ~ 0
+IO4
+Text Label 5950 2150 0    50   ~ 0
+IO5
+Text Label 5950 2250 0    50   ~ 0
+IO6
+Text Label 5950 2350 0    50   ~ 0
+IO7
+Text Label 5950 2450 0    50   ~ 0
+IO8
+Text Label 5950 2550 0    50   ~ 0
+IO9
+Text Label 5950 2650 0    50   ~ 0
+IO10
+Text Label 5950 2750 0    50   ~ 0
+IO11
+Text Label 5950 2850 0    50   ~ 0
+IO12
+Text Label 5950 2950 0    50   ~ 0
+IO13
+Text Label 5950 3050 0    50   ~ 0
+IO14
+Text Label 4350 4350 0    50   ~ 0
+~CE1
+Text Label 4350 4450 0    50   ~ 0
+CE2
+Text Label 4250 3350 0    50   ~ 0
+A19-IO15
+Text Label 4250 3250 0    50   ~ 0
+A18
+Text Label 4250 3150 0    50   ~ 0
+A17
+Text Label 4250 3050 0    50   ~ 0
+A16
+Text Label 4250 2950 0    50   ~ 0
+A15
+Text Label 4250 2850 0    50   ~ 0
+A14
+Text Label 4250 2750 0    50   ~ 0
+A13
+Text Label 4250 2650 0    50   ~ 0
+A12
+Text Label 4250 2550 0    50   ~ 0
+A11
+Text Label 4250 2450 0    50   ~ 0
+A10
+Text Label 4250 2350 0    50   ~ 0
+A9
+Text Label 4250 2250 0    50   ~ 0
+A8
+Text Label 4250 2150 0    50   ~ 0
+A7
+Text Label 4250 2050 0    50   ~ 0
+A6
+Text Label 4250 1950 0    50   ~ 0
+A5
+Text Label 4250 1850 0    50   ~ 0
+A4
+Text Label 4250 1750 0    50   ~ 0
+A3
+Text Label 4250 1650 0    50   ~ 0
+A2
+Text Label 4250 1550 0    50   ~ 0
+A1
+Text Label 4250 1450 0    50   ~ 0
+A0
 $EndSCHEMATC
