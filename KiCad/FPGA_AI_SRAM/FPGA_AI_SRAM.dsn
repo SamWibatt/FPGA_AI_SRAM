@@ -59,7 +59,7 @@
       (place J2 119380 -59690 front 0 (PN Conn_01x22_Male))
     )
     (component Capacitor_SMD:C_0805_2012Metric
-      (place C1 107950 -99060 front 0 (PN 0.1uF))
+      (place C1 111760 -99060 front 180 (PN 0.1uF))
     )
   )
   (library
