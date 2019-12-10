@@ -1,0 +1,362 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title "8Mbit SRAM Shield for Upduino V2"
+Date ""
+Rev ""
+Comp ""
+Comment1 "RECOMMEND Pull up ~WE~ and ~OE~"
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L FPGA_AI_SRAM:CY62157 U1
+U 1 1 5DEF1B26
+P 5250 3650
+F 0 "U1" H 5250 4950 50  0000 C CNN
+F 1 "CY62157" H 5250 4850 50  0000 C CNN
+F 2 "Package_SO:TSOP-I-48_18.4x12mm_P0.5mm" H 5200 2450 50  0001 C CNN
+F 3 "" H 4750 3100 50  0001 C CNN
+	1    5250 3650
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Device:C_Small C1
+U 1 1 5DEF2A59
+P 5650 1750
+F 0 "C1" V 5421 1750 50  0000 C CNN
+F 1 "0.1uF" V 5512 1750 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 5650 1750 50  0001 C CNN
+F 3 "~" H 5650 1750 50  0001 C CNN
+	1    5650 1750
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5DEF48CC
+P 5750 1800
+F 0 "#PWR?" H 5750 1550 50  0001 C CNN
+F 1 "GND" H 5755 1627 50  0000 C CNN
+F 2 "" H 5750 1800 50  0001 C CNN
+F 3 "" H 5750 1800 50  0001 C CNN
+	1    5750 1800
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5DEF4D9D
+P 5250 1750
+F 0 "#PWR?" H 5250 1600 50  0001 C CNN
+F 1 "+3.3V" H 5265 1923 50  0000 C CNN
+F 2 "" H 5250 1750 50  0001 C CNN
+F 3 "" H 5250 1750 50  0001 C CNN
+	1    5250 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5DEF64C9
+P 5250 5350
+F 0 "#PWR?" H 5250 5100 50  0001 C CNN
+F 1 "GND" H 5100 5250 50  0000 C CNN
+F 2 "" H 5250 5350 50  0001 C CNN
+F 3 "" H 5250 5350 50  0001 C CNN
+	1    5250 5350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5150 5350 5250 5350
+Wire Wire Line
+	5350 5350 5250 5350
+Connection ~ 5250 5350
+$Comp
+L Connector:Conn_01x16_Male J1
+U 1 1 5DF00ADA
+P 3750 2850
+F 0 "J1" H 3100 2950 50  0000 C CNN
+F 1 "Conn_01x16_Male" H 3200 2850 50  0000 C CNN
+F 2 "" H 3750 2850 50  0001 C CNN
+F 3 "~" H 3750 2850 50  0001 C CNN
+	1    3750 2850
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5DF23968
+P 6250 4600
+F 0 "#PWR?" H 6250 4450 50  0001 C CNN
+F 1 "+3.3V" H 6100 4650 50  0000 C CNN
+F 2 "" H 6250 4600 50  0001 C CNN
+F 3 "" H 6250 4600 50  0001 C CNN
+	1    6250 4600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5250 1750 5250 1950
+Wire Wire Line
+	5550 1750 5250 1750
+Connection ~ 5250 1750
+Wire Wire Line
+	5750 1750 5750 1800
+$Comp
+L Connector:Conn_01x18_Male J2
+U 1 1 5DF3FD7E
+P 6500 2750
+F 0 "J2" H 6472 2724 50  0000 R CNN
+F 1 "Conn_01x18_Male" H 6472 2633 50  0000 R CNN
+F 2 "" H 6500 2750 50  0001 C CNN
+F 3 "~" H 6500 2750 50  0001 C CNN
+	1    6500 2750
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	6300 1950 6300 1750
+Wire Wire Line
+	6300 1750 5750 1750
+Connection ~ 5750 1750
+Wire Wire Line
+	5700 5050 5950 5050
+Wire Wire Line
+	5950 5050 5950 5350
+Wire Wire Line
+	5950 5350 5350 5350
+Connection ~ 5350 5350
+Wire Wire Line
+	5700 4850 5950 4850
+Wire Wire Line
+	5950 4850 5950 5050
+Connection ~ 5950 5050
+Wire Wire Line
+	5700 4650 5950 4650
+Wire Wire Line
+	5950 4650 5950 4850
+Connection ~ 5950 4850
+Wire Wire Line
+	5700 4750 6250 4750
+Wire Wire Line
+	6250 4750 6250 4600
+Wire Wire Line
+	5700 5150 6250 5150
+Wire Wire Line
+	6250 5150 6250 4750
+Connection ~ 6250 4750
+Text Label 6600 2050 0    50   ~ 0
+J8-OSC
+Wire Wire Line
+	5700 2150 6300 2150
+Wire Wire Line
+	5700 2250 6300 2250
+Wire Wire Line
+	5700 2350 6300 2350
+Wire Wire Line
+	5700 2450 6300 2450
+Wire Wire Line
+	5700 2550 6300 2550
+Wire Wire Line
+	5700 2650 6300 2650
+Wire Wire Line
+	5700 2750 6300 2750
+Wire Wire Line
+	5700 2850 6300 2850
+Wire Wire Line
+	5700 2950 6300 2950
+Wire Wire Line
+	5700 3050 6300 3050
+Wire Wire Line
+	5700 3150 6300 3150
+Wire Wire Line
+	5700 3250 6300 3250
+Wire Wire Line
+	5700 3350 6300 3350
+Wire Wire Line
+	5700 3450 6300 3450
+Wire Wire Line
+	5700 3550 6300 3550
+Wire Wire Line
+	5700 3650 6300 3650
+NoConn ~ 6200 2050
+Wire Wire Line
+	6300 2050 6200 2050
+Wire Wire Line
+	3950 2150 3950 1750
+Wire Wire Line
+	3950 1750 5250 1750
+$Comp
+L power:GND #PWR?
+U 1 1 5DF8623F
+P 4300 1900
+F 0 "#PWR?" H 4300 1650 50  0001 C CNN
+F 1 "GND" H 4305 1727 50  0000 C CNN
+F 2 "" H 4300 1900 50  0001 C CNN
+F 3 "" H 4300 1900 50  0001 C CNN
+	1    4300 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3950 2250 4100 2250
+Wire Wire Line
+	4100 2250 4100 1900
+Wire Wire Line
+	4100 1900 4300 1900
+Wire Wire Line
+	3950 2350 4800 2350
+Wire Wire Line
+	3950 2450 4800 2450
+Wire Wire Line
+	3950 2550 4800 2550
+Wire Wire Line
+	3950 2650 4800 2650
+Wire Wire Line
+	3950 2750 4800 2750
+Wire Wire Line
+	3950 2850 4800 2850
+Wire Wire Line
+	3950 2950 4800 2950
+Wire Wire Line
+	3950 3050 4800 3050
+Wire Wire Line
+	5700 3750 6850 3750
+Wire Wire Line
+	6850 3750 6850 6050
+Wire Wire Line
+	6850 6050 3950 6050
+Wire Wire Line
+	3950 6050 3950 3650
+Wire Wire Line
+	5700 3850 6750 3850
+Wire Wire Line
+	6750 3850 6750 5950
+Wire Wire Line
+	6750 5950 4050 5950
+Wire Wire Line
+	4050 5950 4050 3550
+Wire Wire Line
+	4050 3550 3950 3550
+Wire Wire Line
+	5700 3950 6650 3950
+Wire Wire Line
+	6650 3950 6650 5850
+Wire Wire Line
+	6650 5850 4150 5850
+Wire Wire Line
+	4150 5850 4150 3450
+Wire Wire Line
+	4150 3450 3950 3450
+Wire Wire Line
+	5700 4050 6550 4050
+Wire Wire Line
+	6550 4050 6550 5750
+Wire Wire Line
+	6550 5750 4250 5750
+Wire Wire Line
+	4250 5750 4250 3350
+Wire Wire Line
+	4250 3350 3950 3350
+Wire Wire Line
+	5700 4350 6450 4350
+Wire Wire Line
+	6450 4350 6450 5650
+Wire Wire Line
+	6450 5650 4350 5650
+Wire Wire Line
+	4350 5650 4350 3250
+Wire Wire Line
+	4350 3250 3950 3250
+Wire Wire Line
+	5700 4450 6350 4450
+Wire Wire Line
+	6350 4450 6350 5550
+Wire Wire Line
+	6350 5550 4450 5550
+Wire Wire Line
+	4450 5550 4450 3150
+Wire Wire Line
+	4450 3150 4400 3150
+NoConn ~ 4700 3150
+NoConn ~ 4700 3250
+NoConn ~ 4700 3350
+NoConn ~ 4700 3450
+NoConn ~ 4700 3550
+NoConn ~ 4700 3650
+NoConn ~ 4700 3750
+Wire Wire Line
+	4700 3150 4800 3150
+Wire Wire Line
+	4700 3250 4800 3250
+Wire Wire Line
+	4700 3350 4800 3350
+Wire Wire Line
+	4700 3450 4800 3450
+Wire Wire Line
+	4700 3550 4800 3550
+Wire Wire Line
+	4700 3650 4800 3650
+Wire Wire Line
+	4700 3750 4800 3750
+Text Label 5850 2150 0    50   ~ 0
+A0
+Text Label 5850 2250 0    50   ~ 0
+A1
+Text Label 5850 2350 0    50   ~ 0
+A2
+Text Label 5850 2450 0    50   ~ 0
+A3
+Text Label 5850 2550 0    50   ~ 0
+A4
+Text Label 5850 2650 0    50   ~ 0
+A5
+Text Label 5850 2750 0    50   ~ 0
+A6
+Text Label 5850 2850 0    50   ~ 0
+A7
+Text Label 5850 2950 0    50   ~ 0
+A8
+Text Label 5850 3050 0    50   ~ 0
+A9
+Text Label 5850 3150 0    50   ~ 0
+A10
+Text Label 5850 3250 0    50   ~ 0
+A11
+Text Label 5850 3350 0    50   ~ 0
+A12
+Text Label 5850 3450 0    50   ~ 0
+A13
+Text Label 5850 3550 0    50   ~ 0
+A14
+Text Label 5850 3650 0    50   ~ 0
+A15
+Text Label 5850 3750 0    50   ~ 0
+A16
+Text Label 5850 3850 0    50   ~ 0
+A17
+Text Label 5850 3950 0    50   ~ 0
+A18
+Text Label 5850 4050 0    50   ~ 0
+A19
+Text Label 5850 4350 0    50   ~ 0
+~WE
+Text Label 5850 4450 0    50   ~ 0
+~OE
+Text Label 4400 2350 0    50   ~ 0
+D0
+Text Label 4400 2450 0    50   ~ 0
+D1
+Text Label 4400 2550 0    50   ~ 0
+D2
+Text Label 4400 2650 0    50   ~ 0
+D3
+Text Label 4400 2750 0    50   ~ 0
+D4
+Text Label 4400 2850 0    50   ~ 0
+D5
+Text Label 4400 2950 0    50   ~ 0
+D6
+Text Label 4400 3050 0    50   ~ 0
+D7
+Wire Wire Line
+	4400 3150 3950 3150
+$EndSCHEMATC
