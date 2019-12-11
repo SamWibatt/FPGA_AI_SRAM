@@ -2,7 +2,7 @@
 
   (general
     (thickness 1.6)
-    (drawings 40)
+    (drawings 41)
     (tracks 257)
     (zones 0)
     (modules 4)
@@ -12,7 +12,7 @@
   (page A4)
   (layers
     (0 F.Cu signal)
-    (31 B.Cu signal hide)
+    (31 B.Cu signal)
     (34 B.Paste user)
     (35 F.Paste user)
     (36 B.SilkS user)
@@ -486,6 +486,9 @@
     )
   )
 
+  (gr_text "Board v1" (at 159.2 99.7) (layer F.SilkS)
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
   (gr_text "SamWibatt\n2019" (at 161.29 138.43) (layer F.SilkS)
     (effects (font (size 1.524 1) (thickness 0.15)))
   )
