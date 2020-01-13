@@ -36,13 +36,13 @@ module top_test #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8) ();
     reg o_reset = 0;
     reg o_write = 0;
     reg[ADDR_WIDTH-1:0] o_m_addr = 0;
-    reg[DATA_WIDTH-1:0] io_m_data = 0;
+    wire[DATA_WIDTH-1:0] io_m_data = 0;
 
     //fake pins
-    reg[ADDR_WIDTH-1:0] o_addr = 0;
-    reg[DATA_WIDTH-1:0] io_data = 0;
-    reg o_n_oe = 0;
-    reg o_n_we = 0;
+    wire[ADDR_WIDTH-1:0] o_addr;
+    wire[DATA_WIDTH-1:0] io_data;
+    wire o_n_oe;
+    wire o_n_we;
 
     sram_1Mx8 #(.ADDR_WIDTH(ADDR_WIDTH),.DATA_WIDTH(DATA_WIDTH)) rammy (
         .i_clk(clk),
