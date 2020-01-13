@@ -1,12 +1,17 @@
 //top.v - "main" or "controller" for sram project
 `default_nettype none
 
-//`include "sram.v"
 
-module top(
+module top #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8) (
     output wire led_g,              //alive-blinky, use rgb green ... from controller
     output wire led_b,                  //blue led bc rgb driver needs it
     output wire led_r,                   //red led
+
+    //chip connections - these will be controlled by sram module
+    output wire[ADDR_WIDTH-1:0] o_addr,             //connects straight to pins
+    inout wire[DATA_WIDTH-1:0] io_data,              //straight to pins
+    output wire o_n_oe,                             //~OE (active low output enable), to pins
+    output wire o_n_we,                             //~WE (active low write enable), to pins
     );
 
     wire clk;
@@ -45,18 +50,41 @@ module top(
     defparam rgb.RGB1_CURRENT = "0b000001";     //see SiliconBlue ICE Technology doc
     defparam rgb.RGB2_CURRENT = "0b000001";
 
-    // alive-blinky wires:
-    //wire led_g_outwire;
-    wire led_b_outwire; // = greenblinkct[GREENBLINKBITS-1];
-    //wire led_r_outwire;
+    // non-fpga-specific ==========================================================================
 
-    //then the sram module proper, currently a blinkois
-    //let us have it blink on the blue upduino LED.
-    sram_1Mx8 ram(.i_clk(clk),.o_led(led_b_outwire));
+    // sram ---------------------------------------------------------------------------------------
+    reg o_reset = 0;
+    reg o_write = 0;
+    reg[ADDR_WIDTH-1:0] o_m_addr = 0;
+    reg[DATA_WIDTH-1:0] io_m_data = 0;
 
+    sram_1Mx8 #(.ADDR_WIDTH(ADDR_WIDTH),.DATA_WIDTH(DATA_WIDTH)) rammy (
+        .i_clk(clk),
+        .i_reset(o_reset),
+        .i_write(o_write),
+        .i_addr(o_m_addr),
+        .io_m_data(io_m_data),           //connects just to mentor
+        .o_addr(o_addr),             //connects straight to pins
+        .io_data(io_data),              //straight to pins
+        .o_n_oe(o_n_oe),
+        .o_n_we(o_n_we)
+        );
+
+
+    // blinky -------------------------------------------------------------------------------------
+    wire led_outwire;
+
+    //let us have it blink on the blue and red upduino LED, giving us a dim purple blinky.
+    blinky #(.CBITS(23)) blinkus(.i_clk(clk),.o_led(led_outwire));
+
+    //dim by having the current set low as possible AND dividing down by 2^LED_PWM_DIVIDER_BITS
+    parameter LED_PWM_DIVIDER_BITS = 4;
+    reg [LED_PWM_DIVIDER_BITS-1:0] led_dimmer = 0;
     always @(posedge clk) begin
-        //this should drive the blinkingness
-        led_b_pwm_reg <= led_b_outwire;
+        led_dimmer <= led_dimmer + 1;
+        //this should drive the blinkingness, pwm factor is only 1 when led_dimmer is all 1s
+        led_r_pwm_reg <= led_outwire & &led_dimmer;
+        led_b_pwm_reg <= led_outwire & &led_dimmer;
     end
 
 endmodule

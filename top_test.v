@@ -7,7 +7,7 @@
 //`include "sram.v"
 
 // FOR STARTERS JUST USING CLIFFORD WOLF'S BLINKY
-module top_test();
+module top_test #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8) ();
     //and then the clock, simulation style
     reg clk = 1;
     //make easier-to-count gtkwave values by having a system tick be 10 clk ticks
@@ -23,14 +23,38 @@ module top_test();
     `ifdef TEST
     parameter cbits = 4;
     `else
-    parameter cbits = 26;
+    parameter cbits = 25;
     `endif
-    sram_1Mx8 #(.CBITS(cbits)) ram(.i_clk(clk),.o_led(led_b_outwire));
+    blinky #(.CBITS(cbits)) blinkus(.i_clk(clk),.o_led(led_b_outwire));
 
     always @(posedge clk) begin
         //this should drive the blinkingness
         led_reg <= led_b_outwire;
     end
+
+    //ram module
+    reg o_reset = 0;
+    reg o_write = 0;
+    reg[ADDR_WIDTH-1:0] o_m_addr = 0;
+    reg[DATA_WIDTH-1:0] io_m_data = 0;
+
+    //fake pins
+    reg[ADDR_WIDTH-1:0] o_addr = 0;
+    reg[DATA_WIDTH-1:0] io_data = 0;
+    reg o_n_oe = 0;
+    reg o_n_we = 0;
+
+    sram_1Mx8 #(.ADDR_WIDTH(ADDR_WIDTH),.DATA_WIDTH(DATA_WIDTH)) rammy (
+        .i_clk(clk),
+        .i_reset(o_reset),
+        .i_write(o_write),
+        .i_addr(o_m_addr),
+        .io_m_data(io_m_data),           //connects just to mentor
+        .o_addr(o_addr),             //connects straight to pins
+        .io_data(io_data),              //straight to pins
+        .o_n_oe(o_n_oe),
+        .o_n_we(o_n_we)
+        );
 
     //bit for creating gtkwave output
     /* dunno if we need this with the makefile version - Maybe, it's hanging - aha, bc I hadn't made clean and had a non-finishing version */

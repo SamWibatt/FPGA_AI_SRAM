@@ -1,4 +1,4 @@
-submodules = sram.v
+submodules = sram.v blinky.v
 alldeps = top.v $(submodules)
 testdeps = top_test.v $(submodules)
 all: top.bin

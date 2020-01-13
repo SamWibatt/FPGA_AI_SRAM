@@ -11,36 +11,38 @@ set_io -nowarn spi_cs 16 # Drive high to ensure that the SPI flash is disabled
 # set_io serial_rts_n 14  # no?
 # set_io serial_dtr_n 16  # no?
 
-# Normal GPIO pins, left side
-set_io -nowarn gpio_23 23
-set_io -nowarn gpio_25 25
-set_io -nowarn gpio_26 26
-set_io -nowarn gpio_27 27
-set_io -nowarn gpio_32 32
-set_io -nowarn gpio_35 35
-set_io -nowarn gpio_31 31
-set_io -nowarn gpio_37 37
-set_io -nowarn gpio_34 34
-set_io -nowarn gpio_43 43
-set_io -nowarn gpio_36 36
-set_io -nowarn gpio_42 42
-set_io -nowarn gpio_38 38
-set_io -nowarn gpio_28 28
+# Normal GPIO pins, left side (when looking at top side of upduino2
+# with usb connector at top)
+# settings from sram board for upduino2!
+set_io io_data[0] 23
+set_io io_data[1] 25
+set_io io_data[2] 26
+set_io io_data[3] 27
+set_io io_data[4] 32
+set_io io_data[5] 35
+set_io io_data[6] 31
+set_io io_data[7] 37
+set_io o_n_oe 34
+set_io o_n_we 43
+set_io o_addr[19] 36
+set_io o_addr[18] 42
+set_io o_addr[17] 38
+set_io o_addr[16] 28
 
 # Normal GPIO pins, right side
-set_io -nowarn gpio_12 12
-set_io -nowarn gpio_21 21
-set_io -nowarn gpio_13 13
-set_io -nowarn gpio_19 19
-set_io -nowarn gpio_18 18
-set_io -nowarn gpio_11 11
-set_io -nowarn gpio_9 9
-set_io -nowarn gpio_6 6
-set_io -nowarn gpio_44 44
-set_io -nowarn gpio_4 4
-set_io -nowarn gpio_3 3
-set_io -nowarn gpio_48 48
-set_io -nowarn gpio_45 45
-set_io -nowarn gpio_47 47
-set_io -nowarn gpio_46 46
-set_io -nowarn gpio_2 2
+set_io o_addr[0]  12
+set_io o_addr[1]  21
+set_io o_addr[2]  13
+set_io o_addr[3]  19
+set_io o_addr[4]  18
+set_io o_addr[5]  11
+set_io o_addr[6]  9
+set_io o_addr[7]  6
+set_io o_addr[8]  44
+set_io o_addr[9]  4
+set_io o_addr[10] 3
+set_io o_addr[11] 48
+set_io o_addr[12] 45
+set_io o_addr[13] 47
+set_io o_addr[14] 46
+set_io o_addr[15] 2
