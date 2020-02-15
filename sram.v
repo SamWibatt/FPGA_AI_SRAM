@@ -168,16 +168,80 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8) (
     //shouldn't get changed during cycle, I'd think. Verify w/wishbone docs and
     //be ready to enforce with formal verification
     reg write_reg = 0;
+    // how to spot freshly off reset, use a register. ACTIVE LOW, i.e. 0 means in reset
+    reg n_reset_reg = 0;
+    // looking ahead to when we say this module is "busy"
+    reg busy_reg = 0;
 
     //actual state machine - will try it my usual way with synch and <=
+    //and here is our "state downcounter" - load with the total number of ticks in the cycle,
+    //immediately after reset is raised, then downcount. Cycle is done when counter reaches
+    //0, and various signals are triggered at points along the way calculated from the config
+    //file's timing constants.
+    reg[`SRNS_COUNT_BITS-1:0] STDC = 0;
+    // mode: 0 means ...???, 1 means read initial, 2 means read subsequent, 3 means write
+    localparam  SRMODE_NONE  = 0;
+    localparam  SRMODE_RD1ST = 1;
+    localparam  SRMODE_RDSUB = 2;
+    localparam  SRMODE_WRT   = 3;
+    reg[1:0] mode = 0;
 
     always @(posedge i_clk) begin
         if(i_reset) begin
             //reset! zero out address, make all the i/o pins hi-z
             //hi-z has to happen in assign block bc wires
+            //data will always be hi-z when reset is active and also otherwise unless
+            //write_reg is true
             addr_reg <= 0;
             data_reg <= 0;
             write_reg <= 0;
+            busy_reg <= 0;
+            mode <= 0;
+            STDC <= 0;
+            //mark ~reset register 0, meaning we're in reset. This way, when the not-reset block
+            //below sees that n_reset_reg is 0, it knows reset just ended and can set it <= 1
+            //and set everything up
+            n_reset_reg <= 0;
+        end else if(n_reset_reg == 0) begin
+            n_reset_reg <= 1;       //no longer in reset
+            busy_reg <= 1;
+
+            //FIGURE OUT WHAT MODE WE'RE IN: if i_write is true, we're in SRMODE_WRT,
+            //otherwise in SRMODE_RD1ST
+            if(i_write) begin
+                mode <= SRMODE_WRT;
+                STDC <= 4'h07;       //TEMP TEST will need to figure out timing according to mode
+            end else begin
+                mode <= SRMODE_RD1ST;
+                STDC <= 4'h06;       //TEMP TEST will need to figure out timing according to mode
+            end
+        end else if(|STDC) begin
+            //downcounter is not zero, count down
+            //remember the decrement doesn't take effect until the end of the tick or beginning
+            //of next, ish, so we can decrement "before" case statement or if-tree and do ok
+            STDC <= STDC - 1;
+            //here would go the "if tree" checking against timings, according to mode.
+            //do a case on mode and have logic inside the cases. gross but should work.
+            case (mode)
+                //maybe should make localparams for these? Defines probably even better.
+                //order by length of time, why not.
+                SRMODE_RD1ST: begin
+                end
+
+                SRMODE_RDSUB: begin
+                end
+
+                SRMODE_WRT: begin
+                end
+
+                default: begin                 //should this generate an error? yeah, let's do that
+                    //only how?
+                end
+            endcase
+
+        end else begin
+            //counter is 0, drop busy
+            busy_reg <= 0;
         end
     end
 

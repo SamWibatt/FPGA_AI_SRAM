@@ -1,0 +1,112 @@
+[*]
+[*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
+[*] Sat Feb 15 20:04:31 2020
+[*]
+[dumpfile] "/home/sean/dev/FPGA/FPGA_AI_SRAM/top_test.fst"
+[dumpfile_mtime] "Sat Feb 15 20:02:54 2020"
+[dumpfile_size] 1016
+[savefile] "/home/sean/dev/FPGA/FPGA_AI_SRAM/data/top_test.gtkw"
+[timestart] 0
+[size] 1331 704
+[pos] -1 -1
+*-6.937990 40 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top_test.
+[sst_width] 233
+[signals_width] 194
+[sst_expanded] 1
+[sst_vpaned_height] 180
+@28
+[color] 6
+top_test.rammy.i_clk
+@200
+-blinkus
+@22
+[color] 5
+top_test.blinkus.counter[3:0]
+@28
+[color] 5
+top_test.blinkus.o_led
+@200
+-rammy
+@28
+[color] 7
+top_test.rammy.i_reset
+[color] 7
+top_test.rammy.i_write
+[color] 4
+top_test.rammy.write_reg
+[color] 4
+top_test.rammy.busy_reg
+@29
+top_test.rammy.mode[1:0]
+@22
+top_test.rammy.STDC[2:0]
+[color] 7
+top_test.rammy.i_addr[19:0]
+@c00022
+[color] 4
+top_test.rammy.addr_reg[19:0]
+@28
+(0)top_test.rammy.addr_reg[19:0]
+(1)top_test.rammy.addr_reg[19:0]
+(2)top_test.rammy.addr_reg[19:0]
+(3)top_test.rammy.addr_reg[19:0]
+(4)top_test.rammy.addr_reg[19:0]
+(5)top_test.rammy.addr_reg[19:0]
+(6)top_test.rammy.addr_reg[19:0]
+(7)top_test.rammy.addr_reg[19:0]
+(8)top_test.rammy.addr_reg[19:0]
+(9)top_test.rammy.addr_reg[19:0]
+(10)top_test.rammy.addr_reg[19:0]
+(11)top_test.rammy.addr_reg[19:0]
+(12)top_test.rammy.addr_reg[19:0]
+(13)top_test.rammy.addr_reg[19:0]
+(14)top_test.rammy.addr_reg[19:0]
+(15)top_test.rammy.addr_reg[19:0]
+(16)top_test.rammy.addr_reg[19:0]
+(17)top_test.rammy.addr_reg[19:0]
+(18)top_test.rammy.addr_reg[19:0]
+(19)top_test.rammy.addr_reg[19:0]
+@1401200
+-group_end
+@c00022
+[color] 1
+top_test.rammy.o_addr[19:0]
+@28
+(0)top_test.rammy.o_addr[19:0]
+(1)top_test.rammy.o_addr[19:0]
+(2)top_test.rammy.o_addr[19:0]
+(3)top_test.rammy.o_addr[19:0]
+(4)top_test.rammy.o_addr[19:0]
+(5)top_test.rammy.o_addr[19:0]
+(6)top_test.rammy.o_addr[19:0]
+(7)top_test.rammy.o_addr[19:0]
+(8)top_test.rammy.o_addr[19:0]
+(9)top_test.rammy.o_addr[19:0]
+(10)top_test.rammy.o_addr[19:0]
+(11)top_test.rammy.o_addr[19:0]
+(12)top_test.rammy.o_addr[19:0]
+(13)top_test.rammy.o_addr[19:0]
+(14)top_test.rammy.o_addr[19:0]
+(15)top_test.rammy.o_addr[19:0]
+(16)top_test.rammy.o_addr[19:0]
+(17)top_test.rammy.o_addr[19:0]
+(18)top_test.rammy.o_addr[19:0]
+(19)top_test.rammy.o_addr[19:0]
+@1401200
+-group_end
+@22
+[color] 7
+top_test.rammy.i_data[7:0]
+[color] 4
+top_test.rammy.data_reg[7:0]
+top_test.rammy.io_c_data[7:0]
+[color] 1
+top_test.rammy.o_data[7:0]
+@28
+[color] 1
+top_test.rammy.o_n_oe
+[color] 1
+top_test.rammy.o_n_we
+[pattern_trace] 1
+[pattern_trace] 0

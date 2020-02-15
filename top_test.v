@@ -68,6 +68,10 @@ module top_test #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8) ();
 
     initial begin
         $display("and away we go!!!1");
+        o_reset = 1;                // raise reset, hold for a while to verify that it behaves
+        // remember that a "clock tick" is really 10 ticks in here so do changes on #10 boundaries
+        // or elsewhere if you want to see what "async" signals do
+        #40 o_reset = 0;
         #1000 $finish;           //longer sim, mask clock is now 16 bits. 5 sec run on vm, 30M vcd.
     end
 
