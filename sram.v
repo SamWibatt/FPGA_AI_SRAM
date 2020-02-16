@@ -25,19 +25,52 @@
 //so address will come from mentor, and this will register it and pass it along - I don't think
 //we want the address to go straight from caller to pins. Likewise data... so how do we handle that?
 //pin connections have to be in the top module's ports, yes? Well, I guess so. Figure out how to verify.
-module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8) (
-    input wire i_clk,
-    input wire i_reset,
-    input wire i_write,
-    input wire[ADDR_WIDTH-1:0] i_addr,
-//    inout wire[DATA_WIDTH-1:0] io_m_data,           //connects just to mentor
-    //wishbone doesn't have bidirectional m/s connections, so we need data in and data out
-    input wire[DATA_WIDTH-1:0] i_data,              //data from mentor, for writes (and who knows what else)
-    output wire[DATA_WIDTH-1:0] o_data,             //data to mentor, for reads (awkwelse)
-    output wire[ADDR_WIDTH-1:0] o_addr,             //connects straight to pins
-    inout wire[DATA_WIDTH-1:0] io_c_data,              //straight to pins
-    output wire o_n_oe,                             //~OE (active low output enable), to pins, purely controlled by this module
-    output wire o_n_we                             //~WE (active low write enable), to pins
+// OK SO WHY DON'T WE JUST DO THIS WISHBONE CLASSIC NON-PIPELINED bc that is nice and standard and
+// I understand it. baby yoda steps!
+// Could first try with a single read/single write only, and then support block?
+// why not.
+// so, the latest commit before I try changing all of everything is:
+// commit 1017599c0c9acc4150620f4ebab5a9a67c8a1f07 (HEAD -> master, origin/master, origin/HEAD)
+//Author: Sean Igo <samwibatt@gmail.com>
+//Date:   Sat Feb 15 12:05:02 2020 -0800
+//    progress on state machine yay
+// *************************************************************************************************
+// SO: looking in the wishbone spec 4,
+// 3.5.6 Data Organization for 8-bit Ports
+// shows how you can order 8 bit data for big endian or little endian transfers of
+// >8 bit quantities.
+// There doesn't appear to be any limitation on address width, except that it be <= 64 bits
+// Data, not as sure, but it looks like 8, 16, 32, and 64 are the allowable widths and
+// granularities.
+// in this case I will use 8 bit width and granularity, so everything is really straightforward.
+// let's use tags, or be ready to, start with teeny 2-bit ones by default.
+module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
+    parameter DTAG_WIDTH=2, parameter ATAG_WIDTH=2, parameter CTAG_WIDTH=2) (
+    //syscon stuff
+    input wire CLK_I,       //was i_clk,
+    input wire RST_I,       //was i_reset,
+    //inputs from MENTOR
+    input wire WE_I,        //was i_write,
+    input wire[ADDR_WIDTH-1:0] ADR_I,       //was i_addr,
+    input wire[ATAG_WIDTH-1:0] TGA_I,       //address tag, get used to
+    input wire[DATA_WIDTH-1:0] DAT_I,       //was i_data, //data from mentor, for writes
+    input wire[DTAG_WIDTH-1:0] TGD_I,       //data tag for incoming data, get used to
+    input wire LOCK_I,                      //lock flag, ignore signals from any other mentor. Worry re yet?
+    input wire SEL_I,                       //select... for 8 bit data, shouldn't need it, but get used to it.
+    input wire CYC_I,                       //cycle flag
+    input wire[CTAG_WIDTH-1:0] TGC_I,       //cycle tag, get used to
+    input wire STB_I,                       //strobe
+    //output to MENTOR
+    output wire[DATA_WIDTH-1:0] DAT_O,      //was o_data, //data to mentor, for reads
+    output wire ACK_O,                      //acknowledge
+    //output wire STALL_I,                  //stall is only for pipelined
+    output wire ERR_O,                      //error
+    output wire RTY_O,                      //retry
+    //non-Wishbone stuff such as pins out to actual RAM chip
+    output wire[ADDR_WIDTH-1:0] o_addr,     //connects straight to pins
+    inout wire[DATA_WIDTH-1:0] io_c_data,   //straight to pins
+    output wire o_n_oe,                     //~OE (active low output enable), to pins, purely controlled by this module
+    output wire o_n_we                      //~WE (active low write enable), to pins
     );
 
 
