@@ -161,6 +161,10 @@ if __name__ == "__main__":
     print("`define SR_TICKS_TPWE      ({})".format(make_verilog_number_str(int(ticks_tpwe))))
     print("`define SR_TICKS_THD       ({})".format(make_verilog_number_str(int(ticks_thd))))
     print("`define SR_TICKS_THA_THD   ({})".format(make_verilog_number_str(int(ticks_tha_thd))))
+    print("// downcount clock values to load for one read/write given mode")
+    print("`define SR_READ2_TICKS     ({})".format(make_verilog_number_str(int(read2_ticks))))
+    print("`define SR_READ1_TICKS     ({})".format(make_verilog_number_str(int(read1_ticks))))
+    print("`define SR_WRITE1_TICKS    ({})".format(make_verilog_number_str(int(write1_ticks))))
     print("// count bits must accommodate max of readcycle2 ticks=({}) readcycle1 ticks=({}) and writecycle1 ticks=({}) so {}".
         format(read2_ticks, read1_ticks, write1_ticks, count_top))
     print("`define SRNS_COUNT_BITS    ({})".format(make_verilog_number_str(int(bits_to_hold_sram_max))))

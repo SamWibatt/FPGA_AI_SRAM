@@ -14,5 +14,9 @@
 `define SR_TICKS_TPWE      (1)
 `define SR_TICKS_THD       (1)
 `define SR_TICKS_THA_THD   (1)
+// downcount clock values to load for one read/write given mode
+`define SR_READ2_TICKS     (2)
+`define SR_READ1_TICKS     (2)
+`define SR_WRITE1_TICKS    (4)
 // count bits must accommodate max of readcycle2 ticks=(2) readcycle1 ticks=(2) and writecycle1 ticks=(4) so 4
 `define SRNS_COUNT_BITS    (3)
