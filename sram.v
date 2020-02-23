@@ -202,9 +202,11 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
     //be ready to enforce with formal verification
     reg write_reg = 0;
     // how to spot freshly off reset, use a register. ACTIVE LOW, i.e. 0 means in reset
-    reg n_reset_reg = 0;
+    //not a thing anymore, going to use strobe
+    //reg n_reset_reg = 0;
     // looking ahead to when we say this module is "busy"
-    reg busy_reg = 0;
+    //...not exactly a thing in wishbone
+    //reg busy_reg = 0;
 
     //other wishbone signals: ack, err, retry
     reg ack_reg = 0;
@@ -233,31 +235,42 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
             addr_reg <= 0;
             data_reg <= 0;
             write_reg <= 0;
-            busy_reg <= 0;
+            //busy_reg <= 0;
             mode <= 0;
             STDC <= 0;
             //mark ~reset register 0, meaning we're in reset. This way, when the not-reset block
             //below sees that n_reset_reg is 0, it knows reset just ended and can set it <= 1
             //and set everything up
-            n_reset_reg <= 0;
+            //do I need this? not with strobe.
+            //n_reset_reg <= 0;
             //other wishbone signals: ack, err, retry
             ack_reg <= 0;
             err_reg <= 0;
             retry_reg <= 0;
-        end else if(n_reset_reg == 0) begin
-            n_reset_reg <= 1;       //no longer in reset
-            busy_reg <= 1;
+        //what other conditions? do I want to ignore strobe if counter is still counting? yes
+        end else if(!STDC && STB_I) begin //n_reset_reg == 0) begin
+            //n_reset_reg <= 1;       //no longer in reset
+            ///busy_reg <= 1;
+
+            //in any mode, latch address, yes?
+            addr_reg <= ADR_I;
+            //and write enable
+            write_reg <= WE_I;
 
             //FIGURE OUT WHAT MODE WE'RE IN: if i_write is true, we're in SRMODE_WRT,
             //otherwise in SRMODE_RD1ST
             if(WE_I) begin
                 mode <= SRMODE_WRT;
-                STDC <= 4'h07;       //TEMP TEST will need to figure out timing according to mode
+                STDC <= 7;       //TEMP TEST will need to figure out timing according to mode
             end else begin
+                //latch data that's in DAT_I
+                data_reg <= DAT_I;
                 mode <= SRMODE_RD1ST;
-                STDC <= 4'h06;       //TEMP TEST will need to figure out timing according to mode
+                STDC <= 6;       //TEMP TEST will need to figure out timing according to mode
             end
-        end else if(|STDC) begin
+        //this didn't used to have wait for strobe lowered, I think it needs it
+        //if want to get rid of it, get rid of && !STB_I term
+        end else if(|STDC && !STB_I) begin
             //downcounter is not zero, count down
             //remember the decrement doesn't take effect until the end of the tick or beginning
             //of next, ish, so we can decrement "before" case statement or if-tree and do ok
@@ -281,9 +294,20 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                 end
             endcase
 
+            //if we've just done the last cycle of a count, raise acknowledge register (?)
+            //I think this is right. See in next block where STDC == 0.
+            if(STDC == 1) begin
+                ack_reg <= 1;
+            end
+
         end else begin
-            //counter is 0, drop busy
-            busy_reg <= 0;
+            //counter is 0, raise ack. or rather, do so if count is NEWLY 0.
+            //do I need to lower it again after a cycle? I think so, so if ack_reg is 1,
+            //lower it.
+            //so maybe a count == 1 bit in the count != 0 bit means raise bc that will happen at
+            //the end of the clock, and then this will happen every cycle thereafter until another
+            //strobe....?
+            ack_reg <= 0;
         end
     end
 

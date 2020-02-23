@@ -135,7 +135,7 @@ module top_test #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
         o_m_addr = 1777;        //random address!
         o_write = 1;            //do a write!
         o_strobe = 1;           //raise strobe!
-        #10 o_strobe = 0;       //and then lower it.
+        #70 o_strobe = 0;       //and then lower it. after a while. I think sram shouldn't roll until this drops.
         #1000 $finish;
     end
 
