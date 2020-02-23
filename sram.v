@@ -219,12 +219,23 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
     //0, and various signals are triggered at points along the way calculated from the config
     //file's timing constants.
     reg[`SRNS_COUNT_BITS-1:0] STDC = 0;
-    // mode: 0 means ...???, 1 means read initial, 2 means read subsequent, 3 means write
+    // mode: 0 means ...idle, 1 means read initial, 2 means read subsequent, 3 means write
     localparam  SRMODE_NONE  = 0;
     localparam  SRMODE_RD1ST = 1;
     localparam  SRMODE_RDSUB = 2;
     localparam  SRMODE_WRT   = 3;
-    reg[1:0] mode = 0;
+    reg[1:0] mode = 0;      //HARDCODED #bits to hold mode, adjust as necessary
+    //do I need some state machine logic *outside* the count? like IDLE, WAIT_FOR_STBDROP,
+    //RUNNING (during which it's uninterruptible and does the counter), ACK, DONE?
+    //I need to write this down and plan it out, I suppose
+    localparam SRST_IDLE    = 0;
+    localparam SRST_STBWAIT = 1;
+    localparam SRST_RUNNING = 2;
+    localparam SRST_SENDACK = 3;
+    localparam SRST_DONE    = 4;
+    localparam SRST_ERROR   = 5;
+    reg[2:0] state = 0;      //HARDCODED #bits to hold state, adjust as necessary
+
 
     always @(posedge CLK_I) begin
         if(RST_I) begin
@@ -235,79 +246,143 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
             addr_reg <= 0;
             data_reg <= 0;
             write_reg <= 0;
-            //busy_reg <= 0;
             mode <= 0;
             STDC <= 0;
-            //mark ~reset register 0, meaning we're in reset. This way, when the not-reset block
-            //below sees that n_reset_reg is 0, it knows reset just ended and can set it <= 1
-            //and set everything up
-            //do I need this? not with strobe.
-            //n_reset_reg <= 0;
             //other wishbone signals: ack, err, retry
             ack_reg <= 0;
             err_reg <= 0;
             retry_reg <= 0;
-        //what other conditions? do I want to ignore strobe if counter is still counting? yes
-        end else if(!STDC && STB_I) begin //n_reset_reg == 0) begin
-            //n_reset_reg <= 1;       //no longer in reset
-            ///busy_reg <= 1;
-
-            //in any mode, latch address, yes?
-            addr_reg <= ADR_I;
-            //and write enable
-            write_reg <= WE_I;
-
-            //FIGURE OUT WHAT MODE WE'RE IN: if i_write is true, we're in SRMODE_WRT,
-            //otherwise in SRMODE_RD1ST
-            if(WE_I) begin
-                mode <= SRMODE_WRT;
-                STDC <= 7;       //TEMP TEST will need to figure out timing according to mode
-            end else begin
-                //latch data that's in DAT_I
-                data_reg <= DAT_I;
-                mode <= SRMODE_RD1ST;
-                STDC <= 6;       //TEMP TEST will need to figure out timing according to mode
-            end
-        //this didn't used to have wait for strobe lowered, I think it needs it
-        //if want to get rid of it, get rid of && !STB_I term
-        end else if(|STDC && !STB_I) begin
-            //downcounter is not zero, count down
-            //remember the decrement doesn't take effect until the end of the tick or beginning
-            //of next, ish, so we can decrement "before" case statement or if-tree and do ok
-            STDC <= STDC - 1;
-            //here would go the "if tree" checking against timings, according to mode.
-            //do a case on mode and have logic inside the cases. gross but should work.
-            case (mode)
-                //maybe should make localparams for these? Defines probably even better.
-                //order by length of time, why not.
-                SRMODE_RD1ST: begin
-                end
-
-                SRMODE_RDSUB: begin
-                end
-
-                SRMODE_WRT: begin
-                end
-
-                default: begin                 //should this generate an error? yeah, let's do that
-                    //only how?
-                end
-            endcase
-
-            //if we've just done the last cycle of a count, raise acknowledge register (?)
-            //I think this is right. See in next block where STDC == 0.
-            if(STDC == 1) begin
-                ack_reg <= 1;
-            end
-
+            //and state!
+            state <= SRST_IDLE;
         end else begin
-            //counter is 0, raise ack. or rather, do so if count is NEWLY 0.
-            //do I need to lower it again after a cycle? I think so, so if ack_reg is 1,
-            //lower it.
-            //so maybe a count == 1 bit in the count != 0 bit means raise bc that will happen at
-            //the end of the clock, and then this will happen every cycle thereafter until another
-            //strobe....?
-            ack_reg <= 0;
+            //not in reset, we are in state machine!
+            case (state)
+                SRST_IDLE: begin
+                    //Here we are awaiting a strobe from the mentor
+                    if(STB_I) begin
+                        //latch write / address / data at this point (?) see wb spec
+                        //latching data in read mode isn't meaningful but it's probably not good
+                        //to leave things unassigned. ??? or should we latch only if in write
+                        //and otherwise 0 out?
+                        addr_reg <= ADR_I;
+                        write_reg <= WE_I;
+                        state = SRST_STBWAIT;
+                        //should we also do the counter load here? let's.
+                        //fetch clock start value from config include; rd1st is read cycle 1,
+                        //wrt is write cycle 1.
+                        //TODO figure out how to do SRMODE_RDSUB
+                        if(WE_I) begin
+                            //latch data in
+                            data_reg <= DAT_I;
+                            mode <= SRMODE_WRT;
+                            STDC <= `SR_WRITE1_TICKS;
+                        end else begin
+                            //zero out data reg bc data in is meaningless in a read.
+                            //could be a debug sentinel
+                            data_reg <= 0;
+                            mode <= SRMODE_RD1ST;
+                            STDC <= `SR_READ2_TICKS;
+                        end
+                    end
+                end
+
+                SRST_STBWAIT: begin
+                    //wait for strobe to drop before starting the counter
+                    //it will be all ready to go bc st on exit of SRST_IDLE
+                    //after this, until we return to idle, strobe will be ignored.
+                    //TODO: find out if I need to set some kind of busy signal for this
+                    if(!STB_I) begin
+                        state <= SRST_RUNNING;
+                    end
+                end
+
+                SRST_RUNNING: begin
+                    //sub-state-machine! downcount and send signals as appropriate
+                    if(|STDC) begin
+                        //downcounter is not zero, count down
+                        STDC <= STDC - 1;
+                        //do a case on mode and have logic inside the cases. gross but should work.
+                        case (mode)
+                            //maybe should make localparams for these? Defines probably even better.
+                            //order by length of time, why not.
+                            SRMODE_RD1ST: begin
+                                //here would go the "if tree" checking against timings, according to mode.
+                            end
+
+                            SRMODE_RDSUB: begin
+                                //here would go the "if tree" checking against timings, according to mode.
+                            end
+
+                            SRMODE_WRT: begin
+                                //here would go the "if tree" checking against timings, according to mode.
+                            end
+
+                            default: begin                 //should this generate an error? yeah, let's do that
+                                state <= SRST_ERROR;
+                            end
+                        endcase
+                    end else begin
+                        //counter is 0!
+                        //TODO: conclude whatever needs conluding by mode
+                        // PUT THIS BACK IN if I need the extra state for ack send
+                        //state <= SRST_SENDACK;
+                        //otherwise I'm moving its contents here:
+                        //raise ack
+                        ack_reg <= 1;
+                        state <= SRST_DONE;
+                        //should I zero out write_reg here too to make sure data pins are hi-z?
+                        //yeah let's
+                        write_reg <= 0;
+                    end
+                end
+
+                /* this state seems wasteful. Put it back if timings are too tight, which I don't expect.
+                SRST_SENDACK: begin
+                    //raise ack
+                    ack_reg <= 1;
+                    state <= SRST_DONE;
+                    //should I zero out write_reg here too to make sure data pins are hi-z?
+                    //yeah let's
+                    write_reg <= 0;
+                end
+                */
+
+                SRST_DONE: begin
+                    //lower (keep low) ack
+                    ack_reg <= 0;
+                    //TODO: figure out what other signal stuff needs to change
+                    //probably in every case zero out write reg or otherwise assure the
+                    //data i/o pins are at high-z? yeah, for now at least
+                    write_reg <= 0;
+                    state <= SRST_IDLE;
+                end
+
+                SRST_ERROR: begin
+                    err_reg <= 1;
+                    //what else to do? clear all the signals?
+                    //do we have to wait for mentor to address this,
+                    //or just pulse it?
+                    //TODO FIGURE OUT
+                end
+
+                default: begin
+                    //always have a default!
+                    //error?
+                    //treat like a reset?
+                    addr_reg <= 0;
+                    data_reg <= 0;
+                    write_reg <= 0;
+                    mode <= 0;
+                    STDC <= 0;
+                    //other wishbone signals: ack, err, retry
+                    ack_reg <= 0;
+                    err_reg <= 0;       //TODO DECIDE IF GO TO ERROR STATE
+                    retry_reg <= 0;
+                    //and state!
+                    state <= SRST_IDLE;
+                end
+
+            endcase
         end
     end
 
