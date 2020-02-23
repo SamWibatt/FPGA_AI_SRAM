@@ -206,6 +206,11 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
     // looking ahead to when we say this module is "busy"
     reg busy_reg = 0;
 
+    //other wishbone signals: ack, err, retry
+    reg ack_reg = 0;
+    reg err_reg = 0;
+    reg retry_reg = 0;
+
     //actual state machine - will try it my usual way with synch and <=
     //and here is our "state downcounter" - load with the total number of ticks in the cycle,
     //immediately after reset is raised, then downcount. Cycle is done when counter reaches
@@ -219,8 +224,8 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
     localparam  SRMODE_WRT   = 3;
     reg[1:0] mode = 0;
 
-    always @(posedge i_clk) begin
-        if(i_reset) begin
+    always @(posedge CLK_I) begin
+        if(RST_I) begin
             //reset! zero out address, make all the i/o pins hi-z
             //hi-z has to happen in assign block bc wires
             //data will always be hi-z when reset is active and also otherwise unless
@@ -235,13 +240,17 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
             //below sees that n_reset_reg is 0, it knows reset just ended and can set it <= 1
             //and set everything up
             n_reset_reg <= 0;
+            //other wishbone signals: ack, err, retry
+            ack_reg <= 0;
+            err_reg <= 0;
+            retry_reg <= 0;
         end else if(n_reset_reg == 0) begin
             n_reset_reg <= 1;       //no longer in reset
             busy_reg <= 1;
 
             //FIGURE OUT WHAT MODE WE'RE IN: if i_write is true, we're in SRMODE_WRT,
             //otherwise in SRMODE_RD1ST
-            if(i_write) begin
+            if(WE_I) begin
                 mode <= SRMODE_WRT;
                 STDC <= 4'h07;       //TEMP TEST will need to figure out timing according to mode
             end else begin
@@ -316,6 +325,14 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
     //how to do variable-width hi-z? Per https://stackoverflow.com/questions/18328006/how-can-i-set-a-full-variable-constant
     //you do a = {`SIZE{1'b1}};
     //slightly different here bc we're using a parameter and not a define, so don't need backtick
-    assign io_c_data = (!i_reset & write_reg) ? data_reg : {DATA_WIDTH{1'bz}};
+    assign io_c_data = (!RST_I & write_reg) ? data_reg : {DATA_WIDTH{1'bz}};
+
+    //sending back to mentor with some other wires
+    assign DAT_O = data_reg;        //Is this right? data_reg latches DAT_I for writes, ram return for reads...?
+                                    //need to assign it *something*
+
+    assign ACK_O = ack_reg;         //acknowledge
+    assign ERR_O = err_reg;         //error
+    assign RTY_O = retry_reg;       //retry
 
 endmodule
