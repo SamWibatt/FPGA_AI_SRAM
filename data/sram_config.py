@@ -78,7 +78,8 @@ if __name__ == "__main__":
     ticks_tdoe = ticks_per_ns(22,g_sysfreq)
     #     * latch data
     #     * mark ready for mentor to harvest the byte?
-    #     * wait for rest of tRC ... I think can do 0
+    #     * wait for rest of tRC ... I think can do 0 but let's say not < 1
+    ticks_endrd2 = ticks_per_ns(max(1,45 - (ticks_tace_tdoe + ticks_tdoe)),g_sysfreq)
     #
     #
     #
@@ -137,7 +138,7 @@ if __name__ == "__main__":
 
     # the duration sram state machine has to downcount is the greatest of the first read, subsequent read,
     # or write cycles.
-    read2_ticks = ticks_tace_tdoe + ticks_tdoe
+    read2_ticks = ticks_tace_tdoe + ticks_tdoe + ticks_endrd2
     read1_ticks = ticks_taa + ticks_thzoe
     write1_ticks = ticks_tsa_thzoe + ticks_tpwe + ticks_thd + ticks_tha_thd
     count_top = max(read2_ticks, read1_ticks, write1_ticks)
@@ -151,20 +152,78 @@ if __name__ == "__main__":
     print("//Created by sram_config.py {}\n".format(int(g_sysfreq)))
     print("//system frequency {}Hz".format(make_verilog_number_str(int(g_sysfreq))))
     print("//1 system clock tick = {} nanoseconds".format((1.0 / g_sysfreq) / (1.0/1000000000.0)))
-    print("\n//short delays for sram module, in clock ticks")
     print("`define SR_SYSFREQ         ({})".format(make_verilog_number_str(int(math.ceil(g_sysfreq)))))
-    print("`define SR_TICKS_TACE_TDOE ({})".format(make_verilog_number_str(int(ticks_tace_tdoe))))
-    print("`define SR_TICKS_TDOE      ({})".format(make_verilog_number_str(int(ticks_tdoe))))
-    print("`define SR_TICKS_TAA       ({})".format(make_verilog_number_str(int(ticks_taa))))
-    print("`define SR_TICKS_THZOE     ({})".format(make_verilog_number_str(int(ticks_thzoe))))
-    print("`define SR_TICKS_TSA_THZOE ({})".format(make_verilog_number_str(int(ticks_tsa_thzoe))))
-    print("`define SR_TICKS_TPWE      ({})".format(make_verilog_number_str(int(ticks_tpwe))))
-    print("`define SR_TICKS_THD       ({})".format(make_verilog_number_str(int(ticks_thd))))
-    print("`define SR_TICKS_THA_THD   ({})".format(make_verilog_number_str(int(ticks_tha_thd))))
-    print("// downcount clock values to load for one read/write given mode")
+    print("\n// downcount clock values to load for one read/write given mode")
     print("`define SR_READ2_TICKS     ({})".format(make_verilog_number_str(int(read2_ticks))))
     print("`define SR_READ1_TICKS     ({})".format(make_verilog_number_str(int(read1_ticks))))
     print("`define SR_WRITE1_TICKS    ({})".format(make_verilog_number_str(int(write1_ticks))))
+    print("\n// downcounter values for actions in read2:")
+    print("// first cycle have address in place and ~WE disabled (raised), enable (lower) ~OE")
+    rd2_tick = read2_ticks
+    print("`define SR_READ2_OEON      ({})".format(make_verilog_number_str(int(rd2_tick))))
+    print("// wait - tACE - tDOE = max 45 - max 22 = 23 ns")
+    print("// then disable (raise) ~OE (WILL CHANGE FOR SUBSEQUENT BYTE VERSION)")
+    rd2_tick -= ticks_tace_tdoe
+    print("`define SR_READ2_OEOFF     ({})".format(make_verilog_number_str(int(rd2_tick))))
+    print("// wait tDOE = max 22ns")
+    print("// then latch data, mark ready for mentor to harvest the byte")
+    rd2_tick -= ticks_tdoe
+    print("`define SR_READ2_LATCH     ({})".format(make_verilog_number_str(int(rd2_tick))))
+    print("// wait for rest of tRC which may be 0 more")
+    rd2_tick = 0
+    print("`define SR_READ2_DONE      ({})".format(make_verilog_number_str(int(rd2_tick))))
+
+    # subsequent byte read (read cycle 1 from datasheet)
+    print("\n// downcounter values for actions in read1 (subsequent bytes after a read2 above):")
+    print("// assumed that ~OE is still low and ~WE high")
+    print("// on first cycle, change address")
+    rd1_tick = read1_ticks
+    print("`define SR_READ1_NEWADDR   ({})".format(make_verilog_number_str(int(rd1_tick))))
+    print("// then wait tAA = max 45ns, latch data, send ack")
+    print("// if this is the last byte, disable (raise) ~OE")
+    rd1_tick -= ticks_taa
+    print("`define SR_READ1_LATCHACK  ({})".format(make_verilog_number_str(int(rd1_tick))))
+    print("// then wait tHZOE = max 18ns (note 29, I/Os are in output, do not apply signal)")
+    rd1_tick -= ticks_thzoe
+    print("`define SR_READ1_DONE      ({})".format(make_verilog_number_str(int(rd1_tick))))
+
+    # write: write cycle 1 from datasheet
+    #     * address
+    #     * raise ~OE - or is it already?
+    print("\n// downcounter values for actions in write1:")
+    print("//******************************* PROOFREAD THIS")
+    print("// first cycle have address in place, ~OE disabled (high)")
+    wr1_tick = write1_ticks
+    print("`define SR_WRITE1_NEWADDR  ({})".format(make_verilog_number_str(int(wr1_tick))))
+    print("// then wait tHZOE = max 18 ns (note 29, I/Os are in output, do not apply signal)")
+    print("// and present data on output pins, enable (drop) ~WE")
+    wr1_tick -= ticks_tsa_thzoe
+    print("`define SR_WRITE1_WEON     ({})".format(make_verilog_number_str(int(wr1_tick))))
+    print("// wait for rest of write length, tPWE = 35 ns?")
+    print("// then raise (disable) ~WE")
+    wr1_tick -= ticks_tpwe
+    print("`define SR_WRITE1_WEOFF    ({})".format(make_verilog_number_str(int(wr1_tick))))
+    # not sure what this part is for:
+    #     * wait tHD = min 0...? not less than 1 tick, say
+    #ticks_thd = ticks_per_ns(1,g_sysfreq)
+    # end not sure what this part is for
+    print("// wait the rest of tWC = 45 ns, let's just say wait until timer is 0")
+    #         * really tHA - tHD = min 0... so I guess rest of 45ns
+    #         * not less than 1 tick
+    #ticks_tha_thd = ticks_per_ns(max(1,45 - (ticks_tsa_thzoe + ticks_tpwe + ticks_thd)),g_sysfreq)
+    wr1_tick = 0
+    print("`define SR_WRITE1_DONE     ({})".format(make_verilog_number_str(int(wr1_tick))))
+
+    #print("\n// short delays for sram module, in clock ticks")
+    #print("`define SR_TICKS_TACE_TDOE ({})".format(make_verilog_number_str(int(ticks_tace_tdoe))))
+    #print("`define SR_TICKS_TDOE      ({})".format(make_verilog_number_str(int(ticks_tdoe))))
+    #print("`define SR_TICKS_TAA       ({})".format(make_verilog_number_str(int(ticks_taa))))
+    #print("`define SR_TICKS_THZOE     ({})".format(make_verilog_number_str(int(ticks_thzoe))))
+    #print("`define SR_TICKS_TSA_THZOE ({})".format(make_verilog_number_str(int(ticks_tsa_thzoe))))
+    #print("`define SR_TICKS_TPWE      ({})".format(make_verilog_number_str(int(ticks_tpwe))))
+    #print("`define SR_TICKS_THD       ({})".format(make_verilog_number_str(int(ticks_thd))))
+    #print("`define SR_TICKS_THA_THD   ({})".format(make_verilog_number_str(int(ticks_tha_thd))))
+
     print("// count bits must accommodate max of readcycle2 ticks=({}) readcycle1 ticks=({}) and writecycle1 ticks=({}) so {}".
         format(read2_ticks, read1_ticks, write1_ticks, count_top))
     print("`define SRNS_COUNT_BITS    ({})".format(make_verilog_number_str(int(bits_to_hold_sram_max))))

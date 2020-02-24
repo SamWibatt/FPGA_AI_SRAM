@@ -213,6 +213,12 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
     reg err_reg = 0;
     reg retry_reg = 0;
 
+    //then regs for the ~WE and ~OE pins
+    //BOTH POSITIVE LOGIC IN REG AND NEGATIVE IN OUTPUT!
+    //so that zeroing them disables both in reset
+    reg o_oe_reg = 0;
+    reg o_we_reg = 0;
+
     //actual state machine - will try it my usual way with synch and <=
     //and here is our "state downcounter" - load with the total number of ticks in the cycle,
     //immediately after reset is raised, then downcount. Cycle is done when counter reaches
@@ -252,6 +258,8 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
             ack_reg <= 0;
             err_reg <= 0;
             retry_reg <= 0;
+            o_oe_reg <= 0;
+            o_we_reg <= 0;
             //and state!
             state <= SRST_IDLE;
         end else begin
@@ -307,6 +315,14 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                             //order by length of time, why not.
                             SRMODE_RD1ST: begin
                                 //here would go the "if tree" checking against timings, according to mode.
+                                //#     * wait - tACE - tDOE = max 45 - max 22 = 23 ns?
+                                //ticks_tace_tdoe = ticks_per_ns(23,g_sysfreq)
+                                //#     * drop ~OE
+                                //#     * wait tDOE = max 22ns
+                                //ticks_tdoe = ticks_per_ns(22,g_sysfreq)
+                                //#     * latch data
+                                //#     * mark ready for mentor to harvest the byte?
+                                //#     * wait for rest of tRC ... I think can do 0
                             end
 
                             SRMODE_RDSUB: begin
@@ -378,6 +394,8 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                     ack_reg <= 0;
                     err_reg <= 0;       //TODO DECIDE IF GO TO ERROR STATE
                     retry_reg <= 0;
+                    o_oe_reg <= 0;
+                    o_we_reg <= 0;
                     //and state!
                     state <= SRST_IDLE;
                 end
@@ -433,5 +451,8 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
     assign ACK_O = ack_reg;         //acknowledge
     assign ERR_O = err_reg;         //error
     assign RTY_O = retry_reg;       //retry
+
+    assign o_n_oe = ~o_oe_reg;      //output enable
+    assign o_n_we = ~o_we_reg;      //write enable
 
 endmodule
