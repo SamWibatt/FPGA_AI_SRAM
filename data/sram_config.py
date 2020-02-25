@@ -160,16 +160,16 @@ if __name__ == "__main__":
     print("\n// downcounter values for actions in read2:")
     print("// first cycle have address in place and ~WE disabled (raised), enable (lower) ~OE")
     rd2_tick = read2_ticks
-    print("`define SR_READ2_OEON      ({})".format(make_verilog_number_str(int(rd2_tick))))
     print("// wait - tACE - tDOE = max 45 - max 22 = 23 ns")
-    print("// then disable (raise) ~OE (WILL CHANGE FOR SUBSEQUENT BYTE VERSION)")
+    print("// then enable (lower) ~OE (WILL CHANGE FOR SUBSEQUENT BYTE VERSION)")
     rd2_tick -= ticks_tace_tdoe
-    print("`define SR_READ2_OEOFF     ({})".format(make_verilog_number_str(int(rd2_tick))))
+    print("`define SR_READ2_OEON      ({})".format(make_verilog_number_str(int(rd2_tick))))
     print("// wait tDOE = max 22ns")
     print("// then latch data, mark ready for mentor to harvest the byte")
     rd2_tick -= ticks_tdoe
     print("`define SR_READ2_LATCH     ({})".format(make_verilog_number_str(int(rd2_tick))))
     print("// wait for rest of tRC which may be 0 more")
+    print("// and if there are no subsequent bytes, disable (raise) ~OE")
     rd2_tick = 0
     print("`define SR_READ2_DONE      ({})".format(make_verilog_number_str(int(rd2_tick))))
 

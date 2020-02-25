@@ -308,6 +308,8 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                     //sub-state-machine! downcount and send signals as appropriate
                     if(|STDC) begin
                         //downcounter is not zero, count down
+                        //this doesn't happen until the end of the clock, so can still compare
+                        //to the 'current' value
                         STDC <= STDC - 1;
                         //do a case on mode and have logic inside the cases. gross but should work.
                         case (mode)
@@ -315,14 +317,14 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                             //order by length of time, why not.
                             SRMODE_RD1ST: begin
                                 //here would go the "if tree" checking against timings, according to mode.
-                                //#     * wait - tACE - tDOE = max 45 - max 22 = 23 ns?
-                                //ticks_tace_tdoe = ticks_per_ns(23,g_sysfreq)
-                                //#     * drop ~OE
-                                //#     * wait tDOE = max 22ns
-                                //ticks_tdoe = ticks_per_ns(22,g_sysfreq)
-                                //#     * latch data
-                                //#     * mark ready for mentor to harvest the byte?
-                                //#     * wait for rest of tRC ... I think can do 0
+                                if(STDC == `SR_READ2_OEON) begin
+                                    o_oe_reg <= 1;  //enable (lower) ~OE but our register is poslogic so raise
+                                end else if(STDC == `SR_READ2_LATCH) begin
+                                    data_reg <= io_c_data;
+                                end
+                                // HOW TO HANDLE SR_READ2_DONE which is 0?
+                                // THAT IS WHERE ~OE is disabled (raised)
+                                // TODO FIGURE THIS OUT!!!!!!!!!!!!!!!!!!!!!!!!!
                             end
 
                             SRMODE_RDSUB: begin
