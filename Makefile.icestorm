@@ -75,7 +75,7 @@ pll_%.v:
 # give testdeps in the main Makefile as a space-separated list of .v files, just like in good old Makefile fashion
 # THIS HAS ORDER DEPENDENCY THAT ASSUMES VVP RULE WILL RUN FIRST and create the out and err text files. Probably not a horrible assumption
 %.vvp: $(testdeps)
-	iverilog -D TEST -o $@ $(testdeps) 1> sim_$*_out.txt 2> sim_$*_err.txt
+	iverilog -D $(STEP) -o $@ $(testdeps) 1> sim_$*_out.txt 2> sim_$*_err.txt
 
 %.vcd: %.vvp
 	vvp $< 1>> sim_$*_out.txt 2>> sim_$*_err.txt

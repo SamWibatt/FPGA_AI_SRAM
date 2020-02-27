@@ -322,17 +322,32 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                                 end else if(STDC == `SR_READ2_LATCH) begin
                                     data_reg <= io_c_data;
                                 end
-                                // HOW TO HANDLE SR_READ2_DONE which is 0?
-                                // THAT IS WHERE ~OE is disabled (raised)
-                                // TODO FIGURE THIS OUT!!!!!!!!!!!!!!!!!!!!!!!!!
                             end
 
                             SRMODE_RDSUB: begin
                                 //here would go the "if tree" checking against timings, according to mode.
+                                // TODO WRITE ME ****************************************************************************************************
+                                // TODO WRITE ME ****************************************************************************************************
+                                // TODO WRITE ME ****************************************************************************************************
                             end
 
                             SRMODE_WRT: begin
                                 //here would go the "if tree" checking against timings, according to mode.
+                                // TODO WRITE ME ****************************************************************************************************
+                                // TODO WRITE ME ****************************************************************************************************
+                                // TODO WRITE ME ****************************************************************************************************
+                                if(STDC == `SR_WRITE1_NEWADDR) begin
+                                    //address should already be in place. make sure output enable is disabled
+                                    o_oe_reg <= 0;
+                                end else if(STDC == `SR_WRITE1_WEON) begin
+                                    //data should already be ready on the data pins, enable write enable
+                                    //but if data ISN't on the pins, put it there here
+                                    o_we_reg <= 1;
+                                end else if(STDC == `SR_WRITE1_WEOFF) begin
+                                    //by now the data should have been written to the ram, disable we
+                                    o_we_reg <= 0;
+                                end
+                                    //then after this there's no other control stuff, currently. 
                             end
 
                             default: begin                 //should this generate an error? yeah, let's do that
@@ -341,7 +356,32 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                         endcase
                     end else begin
                         //counter is 0!
-                        //TODO: conclude whatever needs conluding by mode
+                        //conclude whatever needs concluding by mode
+                        //ASSUMING THAT THE _DONE VALUES FOR ALL THE MODES IS 0.
+                        case (mode)
+                            SRMODE_RD1ST: begin
+                                // and if there are no subsequent bytes, disable (raise) ~OE
+                                // TODO figure out how to know this. Cycle?
+                                // SR_READ2_DONE      (0)
+                                o_oe_reg <= 0;          //bc this is positive logic
+                            end
+
+                            SRMODE_RDSUB: begin
+                                //if this is the last byte, disable (raise) ~OE by lowering our positive logic regr
+                                //TODO figure out how to know this. Cycle?
+                                //SR_READ1_DONE
+                                o_oe_reg <= 0;          //TEMP!!!!!!!! FIGURE OUT!!!!!!!!!!
+                            end
+
+                            SRMODE_WRT: begin
+                                //I don't think anything else needs to be done here
+                                state <= SRST_DONE;         //TODO figure out
+                            end
+
+                            default: begin                 //should this generate an error? with count = 0, it's not as bad...?
+                                state <= SRST_DONE;         //TODO figure out
+                            end
+                        endcase
                         // PUT THIS BACK IN if I need the extra state for ack send
                         //state <= SRST_SENDACK;
                         //otherwise I'm moving its contents here:

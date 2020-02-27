@@ -1,10 +1,10 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Sun Feb 23 18:05:39 2020
+[*] Thu Feb 27 15:09:44 2020
 [*]
 [dumpfile] "/home/sean/dev/FPGA/FPGA_AI_SRAM/top_test.fst"
-[dumpfile_mtime] "Sun Feb 23 18:02:56 2020"
-[dumpfile_size] 1267
+[dumpfile_mtime] "Thu Feb 27 15:09:11 2020"
+[dumpfile_size] 1823
 [savefile] "/home/sean/dev/FPGA/FPGA_AI_SRAM/data/top_test.gtkw"
 [timestart] 0
 [size] 1331 704
@@ -20,9 +20,6 @@ top_test.rammy.CLK_I
 top_test.rammy.RST_I
 @200
 -blinkus
-@22
-[color] 5
-top_test.blinkus.counter[3:0]
 @28
 [color] 5
 top_test.blinkus.o_led
@@ -36,10 +33,11 @@ top_test.rammy.STB_I
 top_test.rammy.ACK_O
 [color] 4
 top_test.rammy.mode[1:0]
-@25
+@24
 top_test.rammy.state[2:0]
+@23
+top_test.rammy.STDC[3:0]
 @22
-top_test.rammy.STDC[2:0]
 top_test.rammy.ADR_I[19:0]
 @c00022
 [color] 4
