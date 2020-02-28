@@ -1,10 +1,10 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Thu Feb 27 15:09:44 2020
+[*] Fri Feb 28 13:13:53 2020
 [*]
 [dumpfile] "/home/sean/dev/FPGA/FPGA_AI_SRAM/top_test.fst"
-[dumpfile_mtime] "Thu Feb 27 15:09:11 2020"
-[dumpfile_size] 1823
+[dumpfile_mtime] "Fri Feb 28 13:13:26 2020"
+[dumpfile_size] 1821
 [savefile] "/home/sean/dev/FPGA/FPGA_AI_SRAM/data/top_test.gtkw"
 [timestart] 0
 [size] 1331 704
@@ -31,13 +31,14 @@ top_test.rammy.WE_I
 top_test.rammy.write_reg
 top_test.rammy.STB_I
 top_test.rammy.ACK_O
+top_test.rammy.CYC_I
+top_test.rammy.cyc_reg
 [color] 4
 top_test.rammy.mode[1:0]
 @24
 top_test.rammy.state[2:0]
-@23
-top_test.rammy.STDC[3:0]
 @22
+top_test.rammy.STDC[3:0]
 top_test.rammy.ADR_I[19:0]
 @c00022
 [color] 4
@@ -65,8 +66,7 @@ top_test.rammy.addr_reg[19:0]
 (19)top_test.rammy.addr_reg[19:0]
 @1401200
 -group_end
-@c00022
-[color] 1
+@c00023
 top_test.rammy.o_addr[19:0]
 @28
 (0)top_test.rammy.o_addr[19:0]
@@ -89,7 +89,7 @@ top_test.rammy.o_addr[19:0]
 (17)top_test.rammy.o_addr[19:0]
 (18)top_test.rammy.o_addr[19:0]
 (19)top_test.rammy.o_addr[19:0]
-@1401200
+@1401201
 -group_end
 @22
 top_test.rammy.DAT_I[7:0]

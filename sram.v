@@ -201,12 +201,11 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
     //shouldn't get changed during cycle, I'd think. Verify w/wishbone docs and
     //be ready to enforce with formal verification
     reg write_reg = 0;
-    // how to spot freshly off reset, use a register. ACTIVE LOW, i.e. 0 means in reset
-    //not a thing anymore, going to use strobe
-    //reg n_reset_reg = 0;
-    // looking ahead to when we say this module is "busy"
-    //...not exactly a thing in wishbone
-    //reg busy_reg = 0;
+    //similar, cycle register.
+    //TODO find out if all signals are supposed to be synched, I think they are.
+    //in any case latching cyc at every clock seems like a good idea, investigate timing.
+    reg cyc_reg = 0;
+
 
     //other wishbone signals: ack, err, retry
     reg ack_reg = 0;
@@ -252,6 +251,7 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
             addr_reg <= 0;
             data_reg <= 0;
             write_reg <= 0;
+            cyc_reg <= 0;
             mode <= 0;
             STDC <= 0;
             //other wishbone signals: ack, err, retry
@@ -263,6 +263,11 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
             //and state!
             state <= SRST_IDLE;
         end else begin
+            //latch cycle register every tick
+            //is this going to lag too much to be useful?
+            //TODO keep an eye on timing
+            cyc_reg <= CYC_I;
+
             //not in reset, we are in state machine!
             case (state)
                 SRST_IDLE: begin
@@ -347,7 +352,7 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                                     //by now the data should have been written to the ram, disable we
                                     o_we_reg <= 0;
                                 end
-                                    //then after this there's no other control stuff, currently. 
+                                    //then after this there's no other control stuff, currently.
                             end
 
                             default: begin                 //should this generate an error? yeah, let's do that
@@ -361,16 +366,24 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                         case (mode)
                             SRMODE_RD1ST: begin
                                 // and if there are no subsequent bytes, disable (raise) ~OE
-                                // TODO figure out how to know this. Cycle?
+                                //TODO figure out how to know this. Cycle? YES! From WB4 spec,
+                                //CYC_I
+                                //The cycle input [CYC_I], when asserted, indicates that a valid bus cycle is in progress. The
+                                //signal is asserted for the duration of all bus cycles. For example, during a BLOCK transfer
+                                //cycle there can be multiple data transfers. The [CYC_I] signal is asserted during the first
+                                //data transfer, and remains asserted until the last data transfer.
                                 // SR_READ2_DONE      (0)
-                                o_oe_reg <= 0;          //bc this is positive logic
+                                if(!cyc_reg) begin
+                                    o_oe_reg <= 0;
+                                end
                             end
 
                             SRMODE_RDSUB: begin
                                 //if this is the last byte, disable (raise) ~OE by lowering our positive logic regr
-                                //TODO figure out how to know this. Cycle?
                                 //SR_READ1_DONE
-                                o_oe_reg <= 0;          //TEMP!!!!!!!! FIGURE OUT!!!!!!!!!!
+                                if(!cyc_reg) begin
+                                    o_oe_reg <= 0;
+                                end
                             end
 
                             SRMODE_WRT: begin
@@ -430,6 +443,7 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                     addr_reg <= 0;
                     data_reg <= 0;
                     write_reg <= 0;
+                    cyc_reg <= 0;
                     mode <= 0;
                     STDC <= 0;
                     //other wishbone signals: ack, err, retry
@@ -485,6 +499,9 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
     //you do a = {`SIZE{1'b1}};
     //slightly different here bc we're using a parameter and not a define, so don't need backtick
     assign io_c_data = (!RST_I & write_reg) ? data_reg : {DATA_WIDTH{1'bz}};
+
+    //and address
+    assign o_addr = addr_reg;
 
     //sending back to mentor with some other wires
     assign DAT_O = data_reg;        //Is this right? data_reg latches DAT_I for writes, ram return for reads...?

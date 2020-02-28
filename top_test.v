@@ -133,9 +133,20 @@ module top_test #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
         #40 o_reset = 0;
         #30 o_m_data = 8'hC9;   //random data value!
         o_m_addr = 1777;        //random address!
+        o_cyc = 1;              //start cycle
         o_write = 1;            //do a write!
         o_strobe = 1;           //raise strobe!
         #70 o_strobe = 0;       //and then lower it. after a while. I think sram shouldn't roll until this drops.
+        #10 o_cyc = 0;          //TODO FIGURE OUT HOW TO USE CYCLE FOR SINGLE BYTE should prolly wait for ack 
+
+        /* ok now for some reads. Single byte should be straightforward, multibyte will need to use CYC_O
+        CYC_O
+        The cycle output [CYC_O], when asserted, indicates that a valid bus cycle is in progress.
+        The signal is asserted for the duration of all bus cycles. For example, during a BLOCK
+        transfer cycle there can be multiple data transfers. The [CYC_O] signal is asserted during
+        the first data transfer, and remains asserted until the last data transfer
+        */
+
         #1000 $finish;
     end
 
