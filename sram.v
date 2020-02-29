@@ -279,11 +279,10 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                         //and otherwise 0 out?
                         addr_reg <= ADR_I;
                         write_reg <= WE_I;
-                        state = SRST_STBWAIT;
+                        //don't wait for strobe! that was a mistake state = SRST_STBWAIT;
                         //should we also do the counter load here? let's.
                         //fetch clock start value from config include; rd1st is read cycle 1,
                         //wrt is write cycle 1.
-                        //TODO figure out how to do SRMODE_RDSUB
                         if(WE_I) begin
                             //latch data in
                             data_reg <= DAT_I;
@@ -296,9 +295,12 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                             mode <= SRMODE_RD1ST;
                             STDC <= `SR_READ2_TICKS;
                         end
+                        //go straight to running when the strobe raises 
+                        state <= SRST_RUNNING;
                     end
                 end
 
+                /* turns out we don't need to do this - see wb spec
                 SRST_STBWAIT: begin
                     //wait for strobe to drop before starting the counter
                     //it will be all ready to go bc st on exit of SRST_IDLE
@@ -308,6 +310,7 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                         state <= SRST_RUNNING;
                     end
                 end
+                */
 
                 SRST_RUNNING: begin
                     //sub-state-machine! downcount and send signals as appropriate

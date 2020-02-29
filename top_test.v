@@ -131,13 +131,22 @@ module top_test #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
         // remember that a "clock tick" is really 10 ticks in here so do changes on #10 boundaries
         // or elsewhere if you want to see what "async" signals do
         #40 o_reset = 0;
-        #30 o_m_data = 8'hC9;   //random data value!
+        o_m_data = 8'hC9;   //random data value!
         o_m_addr = 1777;        //random address!
         o_cyc = 1;              //start cycle
         o_write = 1;            //do a write!
         o_strobe = 1;           //raise strobe!
-        #70 o_strobe = 0;       //and then lower it. after a while. I think sram shouldn't roll until this drops.
-        #10 o_cyc = 0;          //TODO FIGURE OUT HOW TO USE CYCLE FOR SINGLE BYTE should prolly wait for ack 
+        //#70 o_strobe = 0;       //and then lower it. after a while. I think sram shouldn't roll until this drops.
+        #10 o_cyc = 0;          //TODO FIGURE OUT HOW TO USE CYCLE FOR SINGLE BYTE should prolly wait for ack
+
+        //how to wait for ack? Strobe shouldn't drop until we get an ack.
+        //looks like we can use a while
+        while(!i_ack) begin
+            #10 o_strobe = 1;       //dummy task
+        end
+
+        //after we get ack, drop strobe
+        o_strobe = 0;
 
         /* ok now for some reads. Single byte should be straightforward, multibyte will need to use CYC_O
         CYC_O
