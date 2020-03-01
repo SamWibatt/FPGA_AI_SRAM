@@ -2,7 +2,7 @@
 
 `default_nettype none
 
-
+`include "./sram_globals.inc"
 
 //`include "sram.v"
 
@@ -125,7 +125,7 @@ module top_test #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
     end
 
     initial begin
-        $display("and away we go!!!1");
+        $display("Toptest: and away we go!!!1");
         //OK SO AT THE START DO THE FAKE SYSCON THING AND PULSE RESET FOR A FEW CYCLES.
         o_reset = 1;                // raise reset, hold for a while to verify that it behaves
         // remember that a "clock tick" is really 10 ticks in here so do changes on #10 boundaries
@@ -134,18 +134,32 @@ module top_test #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
         o_m_data = 8'hC9;   //random data value!
         o_m_addr = 1777;        //random address!
         o_cyc = 1;              //start cycle
+        o_ctag = `SR_CYC_SWRT;
         o_write = 1;            //do a write!
         o_strobe = 1;           //raise strobe!
         //#70 o_strobe = 0;       //and then lower it. after a while. I think sram shouldn't roll until this drops.
-        #10 o_cyc = 0;          //TODO FIGURE OUT HOW TO USE CYCLE FOR SINGLE BYTE should prolly wait for ack
+        /*
+        #10 o_cyc = 0;          //this is wrong -
+        The cycle input [CYC_I], when asserted, indicates that a valid bus cycle is in progress. The
+        signal is asserted for the duration of all bus cycles. For example, during a BLOCK transfer
+        cycle there can be multiple data transfers. The [CYC_I] signal is asserted during the first
+        data transfer, and remains asserted until the last data transfer
+        */
+
 
         //how to wait for ack? Strobe shouldn't drop until we get an ack.
         //looks like we can use a while
-        while(!i_ack) begin
-            #10 o_strobe = 1;       //dummy task
+        $display("Toptest: Got here 1");
+        while(!i_ack && !i_err) begin
+            //#10 o_strobe = 1;       //dummy task
+            #10 $display("Toptest: waiting for ack/err");
         end
+        $display("Toptest: Got here 2");
 
-        //after we get ack, drop strobe
+        //#1000 $finish;          //TEMP something is making an infinite loop
+
+        //after we get ack, drop cycle and strobe
+        o_cyc = 0;
         o_strobe = 0;
 
         /* ok now for some reads. Single byte should be straightforward, multibyte will need to use CYC_O
@@ -156,7 +170,51 @@ module top_test #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
         the first data transfer, and remains asserted until the last data transfer
         */
 
-        #1000 $finish;
+        //single byte read. Of course we won't read a value unless I figure out a way to put a value in io_data
+        //but can inspect to see that the signals look right
+        //wait a few cycles first, or at least one
+        #10 o_m_addr = 1111;        //random address!
+        o_cyc = 1;              //start cycle
+        o_write = 0;            //do a read!
+        o_strobe = 1;           //raise strobe!
+        //#70 o_strobe = 0;       //and then lower it. after a while. I think sram shouldn't roll until this drops.
+        o_ctag = `SR_CYC_SRD;
+
+        //wait for ack
+        while(!i_ack && !i_err) begin
+            #10 $display("Toptest: waiting for ack/err");
+        end
+
+        o_cyc = 0;                 //end cycle
+        o_strobe = 0;               //eeeeeep don't forget this
+
+        //try a write with cyc not asserted - should do nothing on the student side (?)
+        o_m_data = 8'h47;   //random data value!
+        o_m_addr = 3333;        //random address!
+        //o_cyc = 1;              //start cycle - ONLY DON'T! THAT IS WHAT THIS TEST IS ABOUT
+        o_write = 1;            //do a write!
+        o_strobe = 1;           //raise strobe!
+
+        //try one with an illegal tag/write combo, read with write high. Should go to eror state
+        //AND NOT PERMANENTLY LOCK UP
+        #70 o_m_addr = 2222;        //random address!
+        o_cyc = 1;              //start cycle
+        o_write = 0;            //do a read!
+        o_strobe = 1;           //raise strobe!
+        //#70 o_strobe = 0;       //and then lower it. after a while. I think sram shouldn't roll until this drops.
+        o_ctag = `SR_CYC_SWRT;  //BAD! write is 0 but we're tagging a write cycle
+
+        //wait for ack
+        while(!i_ack && !i_err) begin
+            #10 $display("Toptest: waiting for ack/err");
+        end
+
+        //after we get err, drop cycle and strobe
+        o_cyc = 0;
+        o_strobe = 0;
+
+
+        #100 $finish;           //pad out until things run their course - maybe use a while here too
     end
 
 endmodule
