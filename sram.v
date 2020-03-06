@@ -229,12 +229,13 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
     //0, and various signals are triggered at points along the way calculated from the config
     //file's timing constants.
     reg[`SRNS_COUNT_BITS-1:0] STDC = 0;
-    // mode: 0 means ...idle, 1 means read initial, 2 means read subsequent, 3 means write
+    // mode: 0 means ...idle, 1 means read 1, 2 means read initial, 3 means read subsequent, 4 means write
     localparam  SRMODE_NONE  = 0;
-    localparam  SRMODE_RD1ST = 1;
-    localparam  SRMODE_RDSUB = 2;
-    localparam  SRMODE_WRT   = 3;
-    reg[1:0] mode = 0;      //HARDCODED #bits to hold mode, adjust as necessary
+    localparam  SRMODE_RDONE = 1;
+    localparam  SRMODE_RD1ST = 2;
+    localparam  SRMODE_RDSUB = 3;
+    localparam  SRMODE_WRT   = 4;
+    reg[2:0] mode = 0;      //HARDCODED #bits to hold mode, adjust as necessary - argh forgot to adjust! now better
     //do I need some state machine logic *outside* the count? like IDLE, WAIT_FOR_STBDROP,
     //RUNNING (during which it's uninterruptible and does the counter), ACK, DONE?
     //I need to write this down and plan it out, I suppose
@@ -296,7 +297,8 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                     if(STB_I && CYC_I) begin
                         $display("sram: Got strobe and cycle");
                         //check cycle tag to see if it's a legal one
-                        if(TGC_I != `SR_CYC_SRD && TGC_I != `SR_CYC_BRD &&
+                        if(TGC_I != `SR_CYC_SRD && TGC_I != `SR_CYC_BRD1 &&
+                            TGC_I != `SR_CYC_BRDJ && TGC_I != `SR_CYC_BRDN &&
                             TGC_I != `SR_CYC_SWRT && TGC_I != `SR_CYC_BWRT) begin
                             state <= SRST_ERROR;
                         end else begin
@@ -309,12 +311,12 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                             //and otherwise 0 out?
                             addr_reg <= ADR_I;
                             write_reg <= WE_I;
-                            //don't wait for strobe! that was a mistake state = SRST_STBWAIT;
+                            //don't wait for strobe to drop! that was a mistake state = SRST_STBWAIT;
                             //should we also do the counter load here? let's.
                             //fetch clock start value from config include; rd1st is read cycle 1,
                             //wrt is write cycle 1.
                             if(WE_I) begin
-                                $display("sram: Going to do a write");
+                                $display("sram: Going to do a write!!!");
                                 //latch data in
                                 data_reg <= DAT_I;
                                 mode <= SRMODE_WRT;
@@ -327,7 +329,12 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                                 //zero out data reg bc data in is meaningless in a read.
                                 //could be a debug sentinel
                                 //try it with a 99 - looks like it works!
-                                data_reg <= 99;
+                                //let's instead just take the lower n bits of address, for debugging block read
+                                `ifdef SIM_STEP
+                                    data_reg <= ADR_I[DATA_WIDTH:0];
+                                `else
+                                    data_reg <= 0;
+                                `endif
 
                                 // so - figure out if this is a first or subsequent read.
                                 // is it permissible to persist state in a module? Like if
@@ -354,26 +361,29 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                                 //first cycle of a block?
                                 if(TGC_I == `SR_CYC_SRD) begin
                                     $display("sram: Going to do a single read");
-                                    mode <= SRMODE_RD1ST;
+                                    mode <= SRMODE_RDONE;
                                     STDC <= `SR_READ2_TICKS;
                                     //what if oe is on from a previous read? should be ok
                                     state <= SRST_RUNNING;
-                                end else if(TGC_I == `SR_CYC_BRD) begin
-                                    //how to know if this is a subsequent read?
-                                    //say oe will still be registered from last time.
-                                    //ok BUT WHAT IF THERE ARE TWO BLOCK READS IN A ROW
-                                    //does that matter? TODO FIGURE OUT
-                                    if(o_oe_reg == 1) begin
-                                        $display("sram: Going to do a first read");
-                                        mode <= SRMODE_RD1ST;
-                                        STDC <= `SR_READ2_TICKS;
-                                        state <= SRST_RUNNING;
-                                    end else begin
-                                        $display("sram: Going to do a subsequent read");
-                                        mode <= SRMODE_RDSUB;
-                                        STDC <= `SR_READ1_TICKS;
-                                        state <= SRST_RUNNING;
-                                    end
+                                end else if(TGC_I == `SR_CYC_BRD1) begin
+                                    //first byte of block read
+                                    //TODO: LOOK FOR ERRORS: can it follow certain other tags like BRDJ?
+                                    $display("sram: Going to do a first byte of block read");
+                                    mode <= SRMODE_RD1ST;
+                                    STDC <= `SR_READ2_TICKS;  //timing is the same as single-byte
+                                    state <= SRST_RUNNING;
+                                end else if(TGC_I == `SR_CYC_BRDJ) begin
+                                    $display("sram: Going to do a subsequent but not last block read");
+                                    mode <= SRMODE_RDSUB;
+                                    STDC <= `SR_READ1_TICKS;
+                                    state <= SRST_RUNNING;
+                                end else if(TGC_I == `SR_CYC_BRDN) begin
+                                    //last byte of block read
+                                    //TODO: LOOK FOR ERRORS: can it follow certain other tags, etc?
+                                    $display("sram: Going to do a last byte of block read");
+                                    mode <= SRMODE_RDSUB;
+                                    STDC <= `SR_READ1_TICKS;  //timing is the same as subseq-byte but disable oe
+                                    state <= SRST_RUNNING;
                                 end else begin
                                     //mismatching mode / write!
                                     $display("sram: Mode mismatched write enable!");
@@ -399,33 +409,15 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                 SRST_RUNNING: begin
                     //sub-state-machine! downcount and send signals as appropriate
                     if(|STDC) begin
+                        $display("Running: stdc = %d, mode = %d",STDC, mode);
                         //downcounter is not zero, count down
                         //this doesn't happen until the end of the clock, so can still compare
                         //to the 'current' value
                         STDC <= STDC - 1;
                         //do a case on mode and have logic inside the cases. gross but should work.
                         case (mode)
-                            //maybe should make localparams for these? Defines probably even better.
-                            //order by length of time, why not.
-                            SRMODE_RD1ST: begin
-                                //here would go the "if tree" checking against timings, according to mode.
-                                if(STDC == `SR_READ2_OEON) begin
-                                    o_oe_reg <= 1;  //enable (lower) ~OE but our register is poslogic so raise
-                                end else if(STDC == `SR_READ2_LATCH) begin
-                                    //ok, I think this is what's causing the data_reg to go to zz
-                                    //in the sim trace.
-                                    data_reg <= io_c_data;
-                                end
-                            end
-
-                            SRMODE_RDSUB: begin
-                                //here would go the "if tree" checking against timings, according to mode.
-                                // TODO WRITE ME ****************************************************************************************************
-                                // TODO WRITE ME ****************************************************************************************************
-                                // TODO WRITE ME ****************************************************************************************************
-                            end
-
                             SRMODE_WRT: begin
+                                $display("in running srmode_wrt, stdc = %d",STDC);
                                 //here would go the "if tree" checking against timings, according to mode.
                                 if(STDC == `SR_WRITE1_NEWADDR) begin
                                     //address should already be in place. make sure output enable is disabled
@@ -441,6 +433,34 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                                     //then after this there's no other control stuff, currently.
                             end
 
+
+                            //maybe should make localparams for these? Defines probably even better.
+                            //order by length of time, why not.
+                            SRMODE_RD1ST,
+                            SRMODE_RDONE:
+                            begin
+                                //here would go the "if tree" checking against timings, according to mode.
+                                if(STDC == `SR_READ2_OEON) begin
+                                    o_oe_reg <= 1;  //enable (lower) ~OE but our register is poslogic so raise
+                                end else if(STDC == `SR_READ2_LATCH) begin
+                                    //ok, I think this is what's causing the data_reg to go to zz
+                                    //in the sim trace.
+                                    data_reg <= io_c_data;
+                                end
+                            end
+
+                            SRMODE_RDSUB: begin
+                                //here would go the "if tree" checking against timings, according to mode.
+                                // assumed that ~OE is still low and ~WE high
+                                // on first cycle, change address
+                                //`define SR_READ1_NEWADDR   (9) - should already be in place
+                                // then wait tAA = max 45ns, latch data, send ack
+                                if(STDC == `SR_READ1_LATCHACK) begin
+                                    data_reg <= io_c_data;
+                                    //ack sent at end of cycle - ??
+                                end
+                            end
+
                             default: begin                 //should this generate an error? yeah, let's do that
                                 state <= SRST_ERROR;
                             end
@@ -450,39 +470,30 @@ module sram_1Mx8 #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
                         //conclude whatever needs concluding by mode
                         //ASSUMING THAT THE _DONE VALUES FOR ALL THE MODES IS 0.
                         case (mode)
-                            SRMODE_RD1ST: begin
-                                // and if there are no subsequent bytes, disable (raise) ~OE
-                                //TODO figure out how to know this. Cycle? YES! From WB4 spec,
-                                //CYC_I
-                                //The cycle input [CYC_I], when asserted, indicates that a valid bus cycle is in progress. The
-                                //signal is asserted for the duration of all bus cycles. For example, during a BLOCK transfer
-                                //cycle there can be multiple data transfers. The [CYC_I] signal is asserted during the first
-                                //data transfer, and remains asserted until the last data transfer.
-                                // SR_READ2_DONE      (0)
-                                //so... this isn't right. cyc persists until after ack drops.
-                                //again, this may be a matter of using a cycle tag.
-                                //for now let's say we always disable oe, and figure out the cycle tag.
-                                //single read, disable it. otherwise don't and allow
+                            SRMODE_RDONE: begin
+                                $display("in RDONE done");
+                                // there are no subsequent bytes, disable (raise) ~OE
                                 if(ctag_reg == `SR_CYC_SRD) begin
                                     o_oe_reg <= 0;
                                 end
                             end
 
                             SRMODE_RDSUB: begin
+                                $display("in RDSUB done");
                                 //if this is the last byte, disable (raise) ~OE by lowering our positive logic regr
-                                //SR_READ1_DONE
-                                //TODO rework for cycle tag logic
-                                //if(!cyc_reg) begin
-                                o_oe_reg <= 0;
-                                //end
+                                if(ctag_reg == `SR_CYC_BRDN) begin
+                                    o_oe_reg <= 0;
+                                end
                             end
 
                             SRMODE_WRT: begin
+                                $display("in WRT done");
                                 //I don't think anything else needs to be done here
                                 state <= SRST_DONE;         //TODO figure out
                             end
 
                             default: begin                 //should this generate an error? with count = 0, it's not as bad...?
+                                $display("in default done");
                                 state <= SRST_DONE;         //TODO figure out
                             end
                         endcase

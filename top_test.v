@@ -204,7 +204,7 @@ module top_test #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
         //#70 o_strobe = 0;       //and then lower it. after a while. I think sram shouldn't roll until this drops.
         o_ctag = `SR_CYC_SWRT;  //BAD! write is 0 but we're tagging a write cycle
 
-        //wait for ack
+        //wait for ack / err
         while(!i_ack && !i_err) begin
             #10 $display("Toptest: waiting for ack/err");
         end
@@ -213,6 +213,28 @@ module top_test #(parameter ADDR_WIDTH=20, parameter DATA_WIDTH=8,
         o_cyc = 0;
         o_strobe = 0;
 
+        //now a multi-byte read, swh
+        #30 o_m_addr = 9999;        //random address!
+        o_cyc = 1;              //start cycle
+        o_write = 0;            //do a read!
+        o_strobe = 1;           //raise strobe!
+        //#70 o_strobe = 0;       //and then lower it. after a while. I think sram shouldn't roll until this drops.
+        o_ctag = `SR_CYC_BRD1;   //block read! woot!
+
+
+
+        //wait for ack / err
+        while(!i_ack && !i_err) begin
+            #10 $display("Toptest: waiting for ack/err");
+        end
+
+        //after we get ack/err, drop cycle and strobe
+        o_cyc = 0;
+        o_strobe = 0;
+
+
+        //multi-byte write
+        //TODO WRITE ME!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         #100 $finish;           //pad out until things run their course - maybe use a while here too
     end

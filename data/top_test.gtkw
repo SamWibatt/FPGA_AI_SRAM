@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Sun Mar  1 18:09:06 2020
+[*] Tue Mar  3 14:55:22 2020
 [*]
 [dumpfile] "/home/sean/dev/FPGA/FPGA_AI_SRAM/top_test.fst"
-[dumpfile_mtime] "Sun Mar  1 18:08:38 2020"
-[dumpfile_size] 1658
+[dumpfile_mtime] "Tue Mar  3 14:51:55 2020"
+[dumpfile_size] 1662
 [savefile] "/home/sean/dev/FPGA/FPGA_AI_SRAM/data/top_test.gtkw"
 [timestart] 0
 [size] 1331 704
 [pos] -1 -1
-*-6.993720 280 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.993720 440 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top_test.
 [sst_width] 233
 [signals_width] 194
@@ -25,52 +25,28 @@ top_test.rammy.RST_I
 top_test.blinkus.o_led
 @200
 -rammy
+@22
+top_test.rammy.ADR_I[19:0]
+top_test.rammy.DAT_I[7:0]
 @28
-top_test.rammy.CYC_I
 top_test.rammy.WE_I
-top_test.rammy.write_reg
 top_test.rammy.STB_I
+top_test.rammy.TGC_I[1:0]
 top_test.rammy.CYC_I
-top_test.rammy.cyc_reg
-@29
-top_test.rammy.ctag_reg[1:0]
-@28
 top_test.rammy.ACK_O
-top_test.rammy.err_reg
 top_test.rammy.ERR_O
+@22
+top_test.rammy.DAT_O[7:0]
+@28
 [color] 4
 top_test.rammy.mode[1:0]
 @24
 top_test.rammy.state[2:0]
 @22
 top_test.rammy.STDC[3:0]
-top_test.rammy.ADR_I[19:0]
-@c00022
+@23
 [color] 4
-top_test.rammy.addr_reg[19:0]
-@28
-(0)top_test.rammy.addr_reg[19:0]
-(1)top_test.rammy.addr_reg[19:0]
-(2)top_test.rammy.addr_reg[19:0]
-(3)top_test.rammy.addr_reg[19:0]
-(4)top_test.rammy.addr_reg[19:0]
-(5)top_test.rammy.addr_reg[19:0]
-(6)top_test.rammy.addr_reg[19:0]
-(7)top_test.rammy.addr_reg[19:0]
-(8)top_test.rammy.addr_reg[19:0]
-(9)top_test.rammy.addr_reg[19:0]
-(10)top_test.rammy.addr_reg[19:0]
-(11)top_test.rammy.addr_reg[19:0]
-(12)top_test.rammy.addr_reg[19:0]
-(13)top_test.rammy.addr_reg[19:0]
-(14)top_test.rammy.addr_reg[19:0]
-(15)top_test.rammy.addr_reg[19:0]
-(16)top_test.rammy.addr_reg[19:0]
-(17)top_test.rammy.addr_reg[19:0]
-(18)top_test.rammy.addr_reg[19:0]
-(19)top_test.rammy.addr_reg[19:0]
-@1401200
--group_end
+top_test.rammy.data_reg[7:0]
 @c00022
 top_test.rammy.o_addr[19:0]
 @28
@@ -97,10 +73,6 @@ top_test.rammy.o_addr[19:0]
 @1401200
 -group_end
 @22
-top_test.rammy.DAT_I[7:0]
-[color] 4
-top_test.rammy.data_reg[7:0]
-top_test.rammy.DAT_O[7:0]
 top_test.rammy.io_c_data[7:0]
 @28
 [color] 1
